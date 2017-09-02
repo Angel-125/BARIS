@@ -1,0 +1,98 @@
+Download from GitHub:
+
+Source:
+
+Wiki- RTFM!:
+
+BARIS is highly customizable to suit your play style. Be sure to read up on what you can do before voicing concerns.
+
+7mWIduu.png
+
+“The deorbit motor’s fuel tank just sprung a leak,” Janchell said. Both she and Valentina had been crewing MOLE-2 for the past 78 days. The leaking tank simply added to the collection of failures plaguing the ailing station that had nearly exceeded its design life twice over. “Between that, the Brumby’s dead RCS, and a busted gyro, not to mention the cargo craft’s leaking monopropellant tank and busted comms, I think it’s time to call it.”
+
+“Looks like we’re not going to beat Jeb and Bob’s orbital record,” Valentina lamented.
+
+“Agreed,” Janchell said, “but look at all the science we’ve gathered! So much data to analyze when we get home.”
+
+“I think if we transfer fuel to the cargo ship’s tanks, we can store it there until our orbit lines up with the space center. Then transfer fuel back in and use it.”
+
+“No objections here, boss,” Janchell agreed.
+
+Valentina floated up to the Brumby re-entry capsule and powered it up. “Flight, MOLE-2,” Valentina radioed. “Time to come home. Station is falling apart. We’ll aim for the space center but no promises, a lot is breaking down up here.”
+
+“We copy, MOLE,” Gene radioed back, “we’ll see you in a few hours.”
+
+Wish you had a reason to replace your old space stations? Have you mastered launches so well that you need a new challenge? Want a monkey wrench thrown into your game play every now and then? Then BARIS is for you!
+
+Design Goals
+
+Building A Rocket Isn't Simple (BARIS) is designed to add more challenge to the game by making part functionality break- engines can fail, tanks can leak, and so on. The early game can be rough just like early spaceflight was in our world. The intent is for players to take the time to build up the part quality and Mean Time Between Failures (MTBF), either through flight experience, the Test Bench, or both. Don't expect to be able to fly off into interplanetary space at the start; that's something you have to build up to. But the more times you launch or test, the more reliable your parts will become.
+
+Kermanned spacecraft have the advantage over unkermanned probes and can effect repairs. Yes, the real-world has very high reliability ratings for space probes, but in KSP, since we use the same parts for both kermanned and unkermanned vehicles, a very high reliability will make the game boring. Thus, it's best to design redundancy in your probes and deactivate any part not in use- they'll last longer that way.
+
+For long journeys, put your vehicles into hibernation mode- turn off engines, RCS, SAS, drills, any ISRU converters, lock your fuel tank resourcess, and so on. This is similar to how Soyuz spacecraft hibernate to extend their service life after reaching the ISS. Deactivated parts won't break, but their MTBF ratings still degrade, albeit at a much slower pace.
+
+Finally, BARIS's default settings might not appeal to everyone, but you can change settings to suit your own play styles, either through the Difficulty settings, the Constants file, or both. Be sure to check both places for customizing BARIS before discussing your challenges on the forums.
+
+BLaZxET.png
+
+uOXvZSd.png
+
+ohTD2bh.png
+
+BARIS is compatible with Kerbal Construction Time and Kerbal Alarm Clock.
+
+Recommended Mods
+
+It's Too Hard!
+
+You have a number of options to make things easier on your vessels:
+
+    Lower the Difficulty Modifier.
+    Disable the option for part types to fail for parts that you think are too mission critical to fail.
+    Lower the number of Reliability checks per day.
+    Don't allow parts to explode during launch failures or during post-launch activities.
+    Lower the number of flights it takes to gain flight experience.
+    Conduct static fire tests and/or use the Test Bench to gain flight experience.
+    Disable the option for parts to wear out.
+    Disable the option for launch failures.
+    Disable the need for skilled repair kerbals, the need for Equipment, and/or the need for an EVA to conduct repairs.
+    Edit the values in the Constants.cfg file and/or the MM_BARIS.cfg file.
+
+Acknowledgements
+
+Module Manager by Sarbian
+
+Event Card Images By Squad: BrainDrain, CorporateSponsorship, FluShots, HazzardPay, ManufacturingDefects, Protests, SafetyInspections, SpeedChallenge, WorkerStrike
+
+AstronautOnVacation image by Malaclypse
+
+Special thanks to @JadeOfMaar, @minepagan, @Daelkyr, @rock3tman, @CobaltWolf, @TheRagingIrishman, @ISE, @steedcrugeon @Pak and many others for their feedback and play testing. Thanks guys! :)
+
+License
+
+Race Into Space music by Brian Langsbard. License: GPL V2
+
+Art Assets, including .mu, .mbm, and .dds files but excluding Event Card Images By Squad and AstronautOnVacatin image are copyright 2014-2016 by Michael Billard, All Rights Reserved.
+
+Wild Blue Industries is trademarked by Michael Billard. All Rights Reserved.
+Note that Wild Blue Industries is a ficticious entity created for entertainment purposes. It is in no way meant to represent a real entity.
+Any similarity to a real entity is purely coincidental.
+
+Source code copyright 2017 by Michael Billard (Angel-125)
+
+    This source code is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
