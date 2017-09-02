@@ -1,2 +1,8 @@
 # BARIS
-Building A Rocket Isn't Simple
+Building A Rocket Isn't Simple (BARIS) is designed to add more challenge to the game by making part functionality break- engines can fail, tanks can leak, and so on. The early game can be rough just like early spaceflight was in our world. The intent is for players to take the time to build up the part quality and Mean Time Between Failures (MTBF), either through flight experience, the Test Bench, or both. Don't expect to be able to fly off into interplanetary space at the start; that's something you have to build up to. But the more times you launch or test, the more reliable your parts will become.
+
+Kermanned spacecraft have the advantage over unkermanned probes and can effect repairs. Yes, the real-world has very high reliability ratings for space probes, but in KSP, since we use the same parts for both kermanned and unkermanned vehicles, a very high reliability will make the game boring. Thus, it's best to design redundancy in your probes and deactivate any part not in use- they'll last longer that way.
+
+For long journeys, put your vehicles into hibernation mode- turn off engines, RCS, SAS, drills, any ISRU converters, lock your fuel tank resourcess, and so on. This is similar to how Soyuz spacecraft hibernate to extend their service life after reaching the ISS. Deactivated parts won't break, but their MTBF ratings still degrade, albeit at a much slower pace.
+
+Finally, BARIS's default settings might not appeal to everyone, but you can change settings to suit your own play styles, either through the Difficulty settings, the Constants file, or both. Be sure to check both places for customizing BARIS before discussing your challenges on the forums.
