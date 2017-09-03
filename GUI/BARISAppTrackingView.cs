@@ -25,13 +25,17 @@ namespace WildBlueIndustries
 {
     public class BARISAppTrackingView : Dialog<BARISAppTrackingView>
     {
+        private static Texture wrenchIcon = null;
+
         const int DialogWidth = 350;
-        const int DialogHeight = 600;
+        const int DialogHeight = 500;
+        const int InfoPanelHeightBroken = 120;
         const int InfoPanelHeight = 60;
 
         private Vector2 scrollPos;
         private GUILayoutOption[] scrollViewOptions = new GUILayoutOption[] { GUILayout.Width(DialogWidth) };
         private GUILayoutOption[] infoPanelOptions = new GUILayoutOption[] { GUILayout.Height(InfoPanelHeight) };
+        private GUILayoutOption[] infoPanelOptionsBroken = new GUILayoutOption[] { GUILayout.Height(InfoPanelHeightBroken) };
         private GUILayoutOption[] buttonOptions = new GUILayoutOption[] { GUILayout.Height(24), GUILayout.Width(24) };
         private Vector2 originPoint = new Vector2(0, 0);
 
@@ -52,6 +56,9 @@ namespace WildBlueIndustries
         {
             base.SetVisible(newValue);
 
+            if (wrenchIcon == null)
+                wrenchIcon = GameDatabase.Instance.GetTexture("WildBlueIndustries/000BARIS/Icons/Wrench", false);
+
             if (newValue)
             {
                 //Game events
@@ -66,6 +73,34 @@ namespace WildBlueIndustries
 
         protected void onQualityCheck(QualityCheckResult result)
         {
+        }
+
+        protected void registerRepairProject(UnloadedQualitySummary qualitySummary)
+        {
+            //Show tooltip: The repair attempt might not suceed!
+            if (!BARISScenario.showedRepairProjectTip && BARISScenario.partsCanBreak)
+            {
+                BARISScenario.showedRepairProjectTip = true;
+                BARISEventCardView cardView = new BARISEventCardView();
+
+                cardView.WindowTitle = BARISScenario.RepairProjectTitle;
+                cardView.description = BARISScenario.RepairProjectMsg;
+                cardView.imagePath = BARISScenario.RepairProjectImagePath;
+
+                cardView.SetVisible(true);
+                GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
+            }
+
+            //Create repair project
+            BARISRepairProject repairProject = new BARISRepairProject();
+            repairProject.vesselID = qualitySummary.vessel.id.ToString();
+            repairProject.repairCostFunds = qualitySummary.repairCostFunds;
+            repairProject.repairCostScience = qualitySummary.repairCostScience;
+            repairProject.repairCostTime = qualitySummary.repairCostTime;
+            repairProject.startTime = Planetarium.GetUniversalTime();
+
+            //Register the project
+            BARISScenario.Instance.RegisterRepairProject(repairProject);
         }
 
         protected override void DrawWindowContents(int windowId)
@@ -93,19 +128,121 @@ namespace WildBlueIndustries
                 //Update the summary
                 qualitySummary.UpdateAndGetFailureCandidates(0);
 
-                //Now draw the current reliability
-                GUILayout.BeginScrollView(originPoint, infoPanelOptions);
+                if (qualitySummary.IsBroken())
+                {
+                    GUILayout.BeginScrollView(originPoint, infoPanelOptionsBroken);
 
-                //Vessel name
-                GUILayout.Label("<color=white><b>" + unloadedVessels[index].vesselName + "</b></color>");
+                    //Vessel name & reliability
+                    GUILayout.Label("<color=white><b>" + unloadedVessels[index].vesselName + "</b></color>");
+                    GUILayout.Label("<color=white><b>" + BARISScenario.ConditionLabel + "</b> " + BARISScenario.RepairTimeBroken + "</color>");
+                    drawTigerTeamRepairs(qualitySummary);
 
-                //Reliability
-                GUILayout.Label("<color=white><b>" + BARISScenario.ReliabilityLabel + "</b> " + qualitySummary.reliability + "%</color>");
+                    GUILayout.EndScrollView();
+                }
 
-                GUILayout.EndScrollView();
+                else
+                {
+                    GUILayout.BeginScrollView(originPoint, infoPanelOptions);
+
+                    //Vessel name & reliability
+                    GUILayout.Label("<color=white><b>" + unloadedVessels[index].vesselName + "</b></color>");
+                    GUILayout.Label("<color=white><b>" + BARISScenario.ReliabilityLabel + "</b> " + qualitySummary.reliability + "%</color>");
+
+                    GUILayout.EndScrollView();
+                }
             }
 
             GUILayout.EndScrollView();
+        }
+
+        protected void drawTigerTeamRepairs(UnloadedQualitySummary qualitySummary)
+        {
+            bool canAffordScience = true;
+            bool canAffordFunds = true;
+            bool commNetEnabled = true;
+
+            //Do we have a repair entry? If so, draw the progress.
+            BARISRepairProject repairProject = BARISScenario.Instance.GetRepairProject(qualitySummary.vessel);
+            if (repairProject != null)
+            {
+                GUILayout.Label("<color=white><b>" + Localizer.Format(BARISScenario.RepairTimeProgress) + "</b>" + string.Format("{0:f3}", repairProject.RepairProgress) + "%</color>");
+                return;
+            }
+
+            //Calculate repair costs
+            qualitySummary.CalculateRepairCosts();
+
+            //If we don't then draw the repair costs and buttons.
+            //Science cost to upgrade flight experience.
+            GUILayout.BeginHorizontal();
+            if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER || HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX)
+            {
+                canAffordScience = ResearchAndDevelopment.CanAfford(qualitySummary.repairCostScience);
+
+                if (canAffordScience)
+                    GUILayout.Label("<color=white><b>" + Localizer.Format(BARISScenario.TestBenchScienceCost) + "</b>" + string.Format("{0:n2}", qualitySummary.repairCostScience) + "</color>");
+                else
+                    GUILayout.Label("<color=red><b>" + Localizer.Format(BARISScenario.TestBenchScienceCost) + "</b>" + string.Format("{0:n2}", qualitySummary.repairCostScience) + "</color>");
+            }
+
+            //Funds cost to upgrade flight experience.
+            if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
+            {
+                canAffordFunds = Funding.CanAfford(qualitySummary.repairCostFunds);
+
+                if (canAffordFunds)
+                    GUILayout.Label("<color=white><b>" + Localizer.Format(BARISScenario.TestBenchFundsCost) + "</b>" + string.Format("{0:n2}", qualitySummary.repairCostFunds) + "</color>");
+                else
+                    GUILayout.Label("<color=red><b>" + Localizer.Format(BARISScenario.TestBenchFundsCost) + "</b>" + string.Format("{0:n2}", qualitySummary.repairCostFunds) + "</color>");
+            }
+
+            //CommNet status
+            if (CommNet.CommNetScenario.CommNetEnabled)
+                commNetEnabled = qualitySummary.vessel.connection.IsConnectedHome;
+
+            //Time to attempt repair
+            GUILayout.Label("<color=white><b>" + Localizer.Format(BARISScenario.RepairTimeCost) + "</b>" + string.Format("{0:n2}", qualitySummary.repairCostTime) + 
+                " " + Localizer.Format(BARISScenario.RepairTimeDays) + "</color>");
+
+            //Repair button
+            if (GUILayout.Button(wrenchIcon, buttonOptions))
+            {
+                //Can we afford the funds?
+                if (!canAffordFunds)
+                {
+                    BARISScenario.Instance.LogPlayerMessage(Localizer.Format(BARISScenario.TigerTeamNoFunds));
+                    GUILayout.EndHorizontal();
+                    return;
+                }
+
+                //Can we afford the science?
+                else if (!canAffordScience)
+                {
+                    GUILayout.EndHorizontal();
+                    BARISScenario.Instance.LogPlayerMessage(Localizer.Format(BARISScenario.TigerTeamNoScience));
+                    return;
+                }
+
+                //Do we have a CommNet connection?
+                else if (!commNetEnabled)
+                {
+                    GUILayout.EndHorizontal();
+                    BARISScenario.Instance.LogPlayerMessage(Localizer.Format(BARISScenario.TigerTeamNoComm));
+                    return;
+                }
+
+                //Deduct the costs
+                if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
+                    Funding.Instance.AddFunds(-qualitySummary.repairCostFunds, TransactionReasons.Any);
+                if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER || HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX)
+                    ResearchAndDevelopment.Instance.AddScience(-qualitySummary.repairCostScience, TransactionReasons.Any);
+
+                //Register the new project
+                registerRepairProject(qualitySummary);
+            }
+
+            GUILayout.EndHorizontal();
+
         }
 
     }

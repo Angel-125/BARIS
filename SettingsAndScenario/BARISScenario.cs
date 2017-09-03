@@ -195,6 +195,16 @@ namespace WildBlueIndustries
 
         #region Quality Stats
         /// <summary>
+        /// When you repair a vessel from the Tracking Station, this is the minimum number of days required.
+        /// </summary>
+        public static int MinimumTigerTeamRepairDays = 3;
+
+        /// <summary>
+        /// Target number required for a tiger team to successfully remotely repair a vessel.
+        /// </summary>
+        public static int TigerTeamRepairTarget = 90;
+
+        /// <summary>
         /// Default integration bonus for when a part is created in the field.
         /// </summary>
         public static int FlightCreatedIntegrationBonus = 50;
@@ -441,6 +451,17 @@ namespace WildBlueIndustries
         public static string TestBenchReliabilityAfter = "Post-Simulation Reliability: ";
         public static string KCTReliabilityLabel = "Reliability after construction: ";
         public static string KCTNoPartsLabel = "Please load or create a vessel.";
+        public static string RepairTimeCost = "Repair Time: ";
+        public static string RepairTimeDays = "days";
+        public static string RepairTimeBroken = "- Broken!";
+        public static string RepairTimeProgress = "Solution Research Progress: ";
+        public static string TigerRepairSuccessMsg = "Mission Control's Tiger Team has transmitted repair instructions to ";
+        public static string TigerRepairSuccessMsgUnmanned = "Mission Control's Tiger Team has found some workarounds for ";
+        public static string TigerRepairFailMsg = "Mission Control's Tiger Team could not find a fix for ";
+        public static string TigerRepairTryAgainMsg = ". They could try again...";
+        public static string TigerTeamNoFunds = "Can't afford to pay the Tiger Team.";
+        public static string TigerTeamNoScience = "Not enough research available to the Tiger Team.";
+        public static string TigerTeamNoComm = "No CommNet connection to the striken craft.";
         #endregion
 
         #region ToolTips
@@ -461,6 +482,12 @@ namespace WildBlueIndustries
         public static string BuyExpWithScienceTitle = "Science The $#!^ Out Of This";
         public static string BuyExpWithScienceMsg = "<color=white>Scientists and engineers report that by spending <b>Science</b> and/or <b>Funds</b> you can simulate launch conditions to gain <b>Flight Experience</b> and improve vessel <b>Reliability.</b></color>";
         public static string BuyExpWithScienceToolTipImagePath = "WildBlueIndustries/000BARIS/Images/ScienceThis";
+
+        public static bool showedRepairProjectTip = false;
+        public static string RepairProjectTitle = "Tiger Teams";
+        public static string RepairProjectMsg = "<color=white>Attempting to fix failures on the ground costs time, money, and science, and <b>isn't guaranteed to work.</b> But you can make many repair attempts. If the vessel develops another problem while repairs are in progress, the current efforts will be lost and spent currencies returned.</color>";
+        public static string RepairProjectImagePath = "WildBlueIndustries/000BARIS/Icons/Wrench";
+
         #endregion
 
         #region Housekeeping
@@ -471,10 +498,12 @@ namespace WildBlueIndustries
         public static AudioSource eventCardSong = null;
         public static bool isKCTInstalled = false;
         public static bool partsCanBreak;
+        public static double SecondsPerDay = 0;
         public Dictionary<Vessel, UnloadedQualitySummary> unloadedQualityCache = new Dictionary<Vessel, UnloadedQualitySummary>();
         public bool isThrottleUp;
         public List<BARISEventResult> cachedQualityModifiers = new List<BARISEventResult>();
         public int workPausedDays;
+        public Dictionary<string, BARISRepairProject> repairProjects = new Dictionary<string, BARISRepairProject>();
 
         static string SoundsFolder = "WildBlueIndustries/000BARIS/Sounds/";
         static bool cachingInProgress;
@@ -615,6 +644,9 @@ namespace WildBlueIndustries
 
             //See if it's time to perform a reliability check
             updateReliabilityChecks();
+
+            //Repair project timers
+            updateRepairProjects();
         }
 
         public override void OnLoad(ConfigNode node)
@@ -733,6 +765,20 @@ namespace WildBlueIndustries
                 showedLoadBeforeFlightTip = bool.Parse(node.GetValue("showedLoadBeforeFlightTip"));
             if (node.HasValue("showedBuyExperienceWithScienceTip"))
                 showedBuyExperienceWithScienceTip = bool.Parse(node.GetValue("showedBuyExperienceWithScienceTip"));
+            if (node.HasValue("showedRepairProjectTip"))
+                showedRepairProjectTip = bool.Parse(node.GetValue("showedRepairProjectTip"));
+
+            if (node.HasValue("BARISRepairProject"))
+            {
+                ConfigNode[] repairNodes = node.GetNodes("BARISRepairProject");
+                BARISRepairProject repairProject;
+                foreach (ConfigNode repairNode in repairNodes)
+                {
+                    repairProject = new BARISRepairProject();
+                    repairProject.Load(repairNode);
+                    repairProjects.Add(repairProject.vesselID, repairProject);
+                }
+            }
         }
 
         public override void OnSave(ConfigNode node)
@@ -789,6 +835,11 @@ namespace WildBlueIndustries
                 node.AddValue("showedStaticFireTooltip", showedStaticFireTooltip);
             if (showedBuyExperienceWithScienceTip)
                 node.AddValue("showedBuyExperienceWithScienceTip", showedBuyExperienceWithScienceTip);
+            if (showedRepairProjectTip)
+                node.AddValue("showedRepairProjectTip", showedRepairProjectTip);
+
+            foreach (BARISRepairProject repairProject in repairProjects.Values)
+                node.AddNode(repairProject.Save());
         }
 
         public void PlayModeUpdate(bool PartsCanBreak, bool RepairsRequireResources)
@@ -890,6 +941,7 @@ namespace WildBlueIndustries
 
         protected void onGameSettingsApplied()
         {
+            SecondsPerDay = GameSettings.KERBIN_TIME == true ? QualityCheckIntervalKerbin : QualityCheckIntervalEarth;
             partsCanBreak = BARISSettings.PartsCanBreak;
             showDebug = BARISSettings.DebugMode;
             checksPerDay = BARISSettings.ChecksPerDay;
@@ -924,6 +976,116 @@ namespace WildBlueIndustries
         #endregion
 
         #region API
+        public BARISRepairProject GetRepairProject(Vessel unloadedVessel)
+        {
+            if (repairProjects.ContainsKey(unloadedVessel.id.ToString()))
+                return repairProjects[unloadedVessel.id.ToString()];
+
+            return null;
+        }
+
+        public void CancelRepairProject(Vessel unloadedVessel)
+        {
+            string vesselID = unloadedVessel.id.ToString();
+            BARISRepairProject repairProject = GetRepairProject(unloadedVessel);
+
+            //If the project doesn't exist in the registry then we're done.
+            if (repairProject == null)
+                return;
+
+            //Refund funds and science
+            if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER || HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX)
+                ResearchAndDevelopment.Instance.AddScience(repairProject.repairCostScience, TransactionReasons.Any);
+            if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
+                Funding.Instance.AddFunds(repairProject.repairCostFunds, TransactionReasons.Any);
+
+            //Remove the tiger team repair from the registry
+            repairProjects.Remove(vesselID);
+        }
+
+        public void RegisterRepairProject(BARISRepairProject repairProject)
+        {
+            if (repairProjects.ContainsKey(repairProject.vesselID))
+                repairProjects.Remove(repairProject.vesselID);
+
+            repairProjects.Add(repairProject.vesselID, repairProject);
+        }
+
+        /// <summary>
+        /// Returns the maximum Mean Time Between Failures allowed for the part.
+        /// </summary>
+        /// <param name="mtbf">Base MTBF rating.</param>
+        /// <param name="mtbfCap">Local MTBF cap for the part.</param>
+        /// <param name="repairCount">How many times the part has been repaired</param>
+        /// <param name="mtbfRepairMultiplier">Multiplier for MTBF; applies when repairCount > 0.</param>
+        /// <param name="mtbfBonus">Bonus MTBF gained through flight experience.</param>
+        /// <returns>A double containing the max MTBF possible for the part.</returns>
+        public static double GetMaxMTBF(double mtbf, double mtbfCap, int repairCount, float mtbfRepairMultiplier, double mtbfBonus)
+        {
+            double maxMTBF = mtbf + mtbfBonus;
+
+            //Apply the MTBF cap
+            if (BARISSettingsLaunch.LaunchesCanFail)
+            {
+                //If the part overrides the global cap, then use the part's cap.
+                if (maxMTBF > mtbfCap && mtbfCap > -1)
+                    maxMTBF = mtbfCap;
+
+                //Apply the global quality cap if needed.
+                else if (maxMTBF > BARISScenario.MTBFCap)
+                    maxMTBF = BARISScenario.MTBFCap;
+            }
+
+            else
+            {
+                maxMTBF = BARISScenario.MTBFCap;
+            }
+
+            //Reduce max mtbf
+            if (BARISSettings.PartsWearOut && repairCount > 0)
+                maxMTBF *= (mtbfRepairMultiplier * repairCount);
+
+            return maxMTBF;
+        }
+
+        /// <summary>
+        /// Returns the maximum possibly quality rating of the part.
+        /// </summary>
+        /// <param name="quality">Base quality rating of the part.</param>
+        /// <param name="integrationBonus">Bonus quality from part vehicle integration.</param>
+        /// <param name="flightExperienceBonus">Bonus quality from flight experience.</param>
+        /// <param name="qualityCap">Per-part quality cap</param>
+        /// <param name="repairCount">Number of times the part has been repaired.</param>
+        /// <returns>An int containing the max quality rating possible for the part.</returns>
+        public static int GetMaxQuality(int quality, int integrationBonus, int flightExperienceBonus, int qualityCap, int repairCount)
+        {
+            //Initial value depends upon the base quality rating, the bonus for time spent in a vehicle integration facility, and the flight experience.
+            int maxQuality = quality + integrationBonus + flightExperienceBonus;
+
+            //Apply the quality cap
+            if (BARISSettingsLaunch.LaunchesCanFail)
+            {
+                //If the part overrides the global quality cap, then use the part's quality cap.
+                if (maxQuality > qualityCap && qualityCap > -1)
+                    maxQuality = qualityCap;
+
+                //Apply the global quality cap if needed.
+                else if (maxQuality > BARISSettings.QualityCap)
+                    maxQuality = BARISSettings.QualityCap;
+            }
+
+            else
+            {
+                maxQuality = BARISSettings.QualityCap;
+            }
+
+            //Adjust for the number of times the part has been repaired.
+            if (BARISSettings.PartsWearOut)
+                maxQuality = maxQuality - (repairCount * BARISScenario.QualityLossPerRepairs);
+
+            return maxQuality;
+        }
+
         /// <summary>
         /// Plays an event card that's been drawn from the deck. This is exposed for debugging purposes.
         /// </summary>
@@ -2019,6 +2181,9 @@ namespace WildBlueIndustries
                         failedPartIndex = UnityEngine.Random.Range(0, qualitySummary.qualityModuleSnapshots.Length - 1);
                         moduleSnapshot = qualitySummary.qualityModuleSnapshots[failedPartIndex];
                         moduleSnapshot.moduleValues.SetValue("isBrokenOnStart", true, true);
+                        moduleSnapshot.moduleValues.SetValue("currentQuality", 0, true);
+                        //Cancel any repair attempts in progress
+                        CancelRepairProject(unloadedVessels[index]);
                         brokenModuleCount = int.Parse(moduleSnapshot.moduleValues.GetValue("breakableModuleCount"));
                         brokenModuleCount -= 1;
                         moduleSnapshot.moduleValues.SetValue("breakableModuleCount", brokenModuleCount);
@@ -2036,6 +2201,9 @@ namespace WildBlueIndustries
                             failedPartIndex = UnityEngine.Random.Range(0, failureCandidates.Length - 1);
                             moduleSnapshot = failureCandidates[failedPartIndex];
                             moduleSnapshot.moduleValues.SetValue("isBrokenOnStart", true, true);
+                            moduleSnapshot.moduleValues.SetValue("currentQuality", 0, true);
+                            //Cancel any repair attempts in progress
+                            CancelRepairProject(unloadedVessels[index]);
                             brokenModuleCount = int.Parse(moduleSnapshot.moduleValues.GetValue("breakableModuleCount"));
                             brokenModuleCount -= 1;
                             moduleSnapshot.moduleValues.SetValue("breakableModuleCount", brokenModuleCount);
@@ -2246,6 +2414,50 @@ namespace WildBlueIndustries
         #endregion
 
         #region Helpers
+        protected void updateRepairProjects()
+        {
+            string[] keys = repairProjects.Keys.ToArray();
+            double currentTime = Planetarium.GetUniversalTime();
+            BARISRepairProject repairProject;
+            List<string> doomed = new List<string>();
+            UnloadedQualitySummary qualitySummary = null;
+
+            for (int index = 0; index < keys.Length; index++)
+            {
+                //Update elapsed time
+                repairProject = repairProjects[keys[index]];
+                repairProject.elapsedTime = currentTime - repairProject.startTime;
+
+                //If the project is complete then make the repair attempt
+                if (repairProject.IsProgressComplete)
+                {
+                    //Get the unloaded summary for the vessel.
+                    foreach (Vessel vessel in unloadedQualityCache.Keys)
+                    {
+                        if (repairProject.vesselID == vessel.id.ToString())
+                        {
+                            qualitySummary = unloadedQualityCache[vessel];
+                            break;
+                        }
+                    }
+
+                    //Attempt the repairs
+                    if (qualitySummary != null)
+                        qualitySummary.AttemptRepairs();
+
+                    //Remove project
+                    doomed.Add(keys[index]);
+                }
+            }
+
+            //Removed all the doomed projects
+            if (doomed.Count > 0)
+            {
+                foreach (string doomedProject in doomed)
+                    repairProjects.Remove(doomedProject);
+            }
+        }
+
         protected void updateEventCardTimer()
         {
             if (!eventCardsEnabled)
@@ -2719,6 +2931,12 @@ namespace WildBlueIndustries
                 return;
 
             #region Part Quality
+            if (node.HasValue("MinimumTigerTeamRepairDays"))
+                MinimumTigerTeamRepairDays = int.Parse(node.GetValue("MinimumTigerTeamRepairDays"));
+
+            if (node.HasValue("TigerTeamRepairTarget"))
+                TigerTeamRepairTarget = int.Parse(node.GetValue("TigerTeamRepairTarget"));
+
             if (node.HasValue("CriticalFailRoll"))
                 CriticalFailRoll = int.Parse(node.GetValue("CriticalFailRoll"));
 

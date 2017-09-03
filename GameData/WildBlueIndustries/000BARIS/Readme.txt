@@ -16,6 +16,13 @@ NOTE: ModuleManager is REQUIRED.
 
 ---REVISION HISTORY---
 
+1.3.5
+Tiger Teams
+- When vessels break, you can now go to the Tracking Station and assemble a Tiger Team on the ground to try to resolve the problem. Think of the brilliant engineers who came up with a plan to save Apollo 13. It will cost Funds, Science, and time. You also need a working CommNet connection to the vessel (if CommNet is enabled). There is no guarantee of success. In fact, the odds of success are pretty low. If successful, your Tiger Team will fix the striken vessel without the need for an onboard mechanic or the need for Equipment. If unsuccessful, you can assemble another Tiger Team and try to come up with a fresh perspective.
+
+Constants
+- Added MinimumTigerTeamRepairDays and TigerTeamRepairTarget.
+
 1.3.0
 MTBF
 - Deactivated parts will lose MTBF at a slower rate (default: 1/10th) than activated parts. Think hibernation mode... 

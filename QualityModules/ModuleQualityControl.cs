@@ -61,18 +61,19 @@ namespace WildBlueIndustries
         /// <summary>
         /// From 0 to 100, how reliable is the part? Low values mean the part is prone to breaking. This is the original quality of the part.
         /// </summary>
-        [KSPField()]
+        [KSPField(isPersistant = true)]
         public int quality = 5;
 
         /// <summary>
         /// No mater what bonuses are applied, the part's maximum quality cannot exceed the cap. If > -1 then this cap will be applied. Otherwise the QualityCap from BARISSettings will be used.
         /// </summary>
-        [KSPField()]
+        [KSPField(isPersistant = true)]
         public int qualityCap = -1;
 
         /// <summary>
         /// No mater what bonuses are applied, the part's maximum MTBF cannot exceed the cap. If > -1 then this cap will be applied. Otherwise the MTBFCap from BARISScenario will be used.
         /// </summary>
+        [KSPField(isPersistant = true)]
         public double mtbfCap = -1.0f;
 
         /// <summary>
@@ -86,6 +87,12 @@ namespace WildBlueIndustries
         /// </summary>
         [KSPField(isPersistant = true)]
         public int flightExperienceBonus = 0;
+
+        /// <summary>
+        /// The more times a part flies, the more MTBF new parts gain.
+        /// </summary>
+        [KSPField(isPersistant = true)]
+        public double mtbfBonus = -1.0f;
 
         /// <summary>
         /// Friendly MTBF display units used with GetInfo.
@@ -122,7 +129,7 @@ namespace WildBlueIndustries
         /// <summary>
         /// When a part is repaired, multiply mtbf by this multiplier to get how many hours can elapse before the part starts to break down again.
         /// </summary>
-        [KSPField()]
+        [KSPField(isPersistant = true)]
         public float mtbfRepairMultiplier = 0.7f;
 
         /// <summary>
@@ -174,6 +181,12 @@ namespace WildBlueIndustries
         /// </summary>
         [KSPField(isPersistant = true)]
         public bool isBrokenOnStart;
+
+        /// <summary>
+        /// Field that indicates the part is declared fixed upon start of the part module. This is set when a Tiger Team from Mission Control successfully fixes the part.
+        /// </summary>
+        [KSPField(isPersistant = true)]
+        public bool isFixedOnStart;
 
         /// <summary>
         /// The number of breakable modules in the part. Mostly used during vessel reliability checks to make sure we don't cause the part to break too many times.
@@ -448,6 +461,27 @@ namespace WildBlueIndustries
             debugLog("Part " + this.part.partInfo.title + " is declared broken.");
         }
 
+        public virtual void DeclarePartFixedOnStart()
+        {
+            //Disable the repair button
+            Events["RepairPart"].active = false;
+
+            //Reset highlight color
+            resetHighlightColor();
+
+            //Inform player
+            if (this.part.vessel == FlightGlobals.ActiveVessel && FlightGlobals.ActiveVessel.isEVA)
+            {
+                string message = Localizer.Format(this.part.partInfo.title + BARISScenario.PartFixedMessage);
+                BARISScenario.Instance.LogPlayerMessage(message);
+            }
+
+            //Fire part fixed event.
+            FireOnPartFixed();
+
+            debugLog("Part " + this.part.partInfo.title + " is declared fixed.");
+        }
+
         /// <summary>
         /// This event declares the part fixed. When that occurs, the part's maximum quality will be restored with the number of times it's been repaired accounted for. Additionally,
         /// its current quality will be restored to the maximum possible. If parts wear out, then the maximum possible MTBF will be reduced somewhat, and its current MTBF restored.
@@ -484,6 +518,25 @@ namespace WildBlueIndustries
 
             //Fire part fixed event.
             FireOnPartFixed();
+
+            //Remove any Tiger Team efforts if all the broken parts on the vessel are fixed.
+            List<ModuleQualityControl> qualityModules = this.part.vessel.FindPartModulesImplementing<ModuleQualityControl>();
+            if (qualityModules.Count > 0)
+            {
+                bool allPartsFixed = true;
+
+                for (int index = 0; index < qualityModules.Count; index++)
+                {
+                    if (qualityModules[index].currentQuality <= 0)
+                    {
+                        allPartsFixed = false;
+                        break;
+                    }
+                }
+
+                if (allPartsFixed)
+                    BARISScenario.Instance.CancelRepairProject(this.part.vessel);
+            }
 
             debugLog("Part " + this.part.partInfo.title + " is declared fixed.");
         }
@@ -564,31 +617,7 @@ namespace WildBlueIndustries
         /// <returns>An integer value between 0 and the quality cap (which can be up to 100)</returns>
         public int GetMaxQuality()
         {
-            //Initial value depends upon the base quality rating, the bonus for time spent in a vehicle integration facility, and the flight experience.
-            int maxQuality = quality + integrationBonus + flightExperienceBonus;
-
-            //Apply the quality cap
-            if (BARISSettingsLaunch.LaunchesCanFail)
-            {
-                //If the part overrides the global quality cap, then use the part's quality cap.
-                if (maxQuality > qualityCap && qualityCap > -1)
-                    maxQuality = qualityCap;
-
-                //Apply the global quality cap if needed.
-                else if (maxQuality > BARISSettings.QualityCap)
-                    maxQuality = BARISSettings.QualityCap;
-            }
-
-            else
-            {
-                maxQuality = BARISSettings.QualityCap;
-            }
-
-            //Adjust for the number of times the part has been repaired.
-            if (BARISSettings.PartsWearOut)
-                maxQuality = maxQuality - (repairCount * BARISScenario.QualityLossPerRepairs);
-
-            return maxQuality;
+            return BARISScenario.GetMaxQuality(quality, integrationBonus, flightExperienceBonus, qualityCap, repairCount);
         }
 
         /// <summary>
@@ -597,30 +626,10 @@ namespace WildBlueIndustries
         /// <returns>A double containing the maximum MTBF</returns>
         public double GetMaxMTBF()
         {
-            double maxMTBF = mtbf + BARISScenario.Instance.GetMTBFBonus(this.part, mtbf);
+            if (mtbfBonus <= 0)
+                mtbfBonus = BARISScenario.Instance.GetMTBFBonus(this.part, mtbf);
 
-            //Apply the MTBF cap
-            if (BARISSettingsLaunch.LaunchesCanFail)
-            {
-                //If the part overrides the global cap, then use the part's cap.
-                if (maxMTBF > mtbfCap && mtbfCap > -1)
-                    maxMTBF = mtbfCap;
-
-                //Apply the global quality cap if needed.
-                else if (maxMTBF > BARISScenario.MTBFCap)
-                    maxMTBF = BARISScenario.MTBFCap;
-            }
-
-            else
-            {
-                maxMTBF = BARISScenario.MTBFCap;
-            }
-
-            //Reduce max mtbf
-            if (BARISSettings.PartsWearOut && repairCount > 0)
-                maxMTBF *= (mtbfRepairMultiplier * repairCount);
-
-            return maxMTBF;
+            return BARISScenario.GetMaxMTBF(mtbf, mtbfCap, repairCount, mtbfRepairMultiplier, mtbfBonus);
         }
 
         /// <summary>
@@ -1117,6 +1126,9 @@ namespace WildBlueIndustries
                     flightExperienceBonus = BARISScenario.DefaultFlightBonus;
                 }
 
+                //MTBF bonus
+                mtbfBonus = BARISScenario.Instance.GetMTBFBonus(this.part, mtbf);
+
                 currentQuality = MaxQuality;
                 currentMTBF = MaxMTBF;
             }
@@ -1183,6 +1195,13 @@ namespace WildBlueIndustries
             {
                 isBrokenOnStart = false;
                 DeclarePartBroken();
+            }
+
+            //Declare part fixed on start if needed
+            if (isFixedOnStart)
+            {
+                isFixedOnStart = false;
+                DeclarePartFixedOnStart();
             }
         }
 

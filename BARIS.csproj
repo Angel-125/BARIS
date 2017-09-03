@@ -55,6 +55,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Caching\BARISRepairProject.cs" />
     <Compile Include="GUI\BARISTestBenchButton.cs" />
     <Compile Include="GUI\BARISEventCardView.cs" />
     <Compile Include="GUI\BARISEventButtonsVIew.cs" />

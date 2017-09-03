@@ -30,6 +30,9 @@ namespace WildBlueIndustries
         public ProtoCrewMember rankingAstronaut;
         public int highestRank;
         public int reliability;
+        public int repairCostTime = -1;
+        public float repairCostFunds = -1.0f;
+        public float repairCostScience = -1.0f;
 
         protected void debugLog(string message)
         {
@@ -94,6 +97,187 @@ namespace WildBlueIndustries
                 return failureCandidates.ToArray();
             else
                 return null;
+        }
+
+        public void DeclareVesselFixed()
+        {
+            ConfigNode snapshot;
+            int currentQuality = 0;
+            int integrationBonus = -1;
+            int flightExperienceBonus = BARISScenario.DefaultFlightBonus;
+            int qualityCap = -1;
+            int repairCount = 0;
+            int quality = 5;
+            int vabBonus = BARISScenario.Instance.GetIntegrationCap(true);
+            int sphBonus = BARISScenario.Instance.GetIntegrationCap(false);
+            double mtbfBonus = 600.0f;
+            double mtbf = 600.0f;
+            double mtbfCap = BARISScenario.MTBFCap;
+            float mtbfRepairMultiplier = 0.7f;
+            double currentMTBF = 0;
+
+            for (int index = 0; index < qualityModuleSnapshots.Length; index++)
+            {
+                //Get the snapshot
+                snapshot = qualityModuleSnapshots[index].moduleValues;
+
+                //Setup default values
+                integrationBonus = -1;
+                flightExperienceBonus = BARISScenario.DefaultFlightBonus;
+                qualityCap = -1;
+                repairCount = 0;
+                quality = 5;
+
+                //Get the stats we need
+                if (snapshot.HasValue("quality"))
+                    quality = int.Parse(qualityModuleSnapshots[index].moduleValues.GetValue("quality"));
+                if (snapshot.HasValue("qualityCap"))
+                    qualityCap = int.Parse(qualityModuleSnapshots[index].moduleValues.GetValue("qualityCap"));
+                if (snapshot.HasValue("integrationBonus"))
+                    integrationBonus = int.Parse(qualityModuleSnapshots[index].moduleValues.GetValue("integrationBonus"));
+                if (snapshot.HasValue("flightExperienceBonus"))
+                    flightExperienceBonus = int.Parse(qualityModuleSnapshots[index].moduleValues.GetValue("flightExperienceBonus"));
+                if (snapshot.HasValue("repairCount"))
+                    repairCount = int.Parse(qualityModuleSnapshots[index].moduleValues.GetValue("repairCount"));
+                if (snapshot.HasValue("mtbfRepairMultiplier"))
+                    mtbfRepairMultiplier = float.Parse(qualityModuleSnapshots[index].moduleValues.GetValue("mtbfRepairMultiplier"));
+                if (snapshot.HasValue("mtbfBonus"))
+                    mtbfBonus = double.Parse(qualityModuleSnapshots[index].moduleValues.GetValue("mtbfBonus"));
+                if (snapshot.HasValue("mtbf"))
+                    mtbf = double.Parse(qualityModuleSnapshots[index].moduleValues.GetValue("mtbf"));
+                if (snapshot.HasValue("mtbfCap"))
+                    mtbfCap = double.Parse(qualityModuleSnapshots[index].moduleValues.GetValue("mtbfCap"));
+
+                //Estimate integration bonus if needed.
+                if (integrationBonus == -1)
+                {
+                    if (vabBonus > sphBonus)
+                        integrationBonus = vabBonus;
+                    else
+                        integrationBonus = sphBonus;
+                }
+
+                //Reset current quality
+                currentQuality = BARISScenario.GetMaxQuality(quality, integrationBonus, flightExperienceBonus, qualityCap, repairCount);
+                qualityModuleSnapshots[index].moduleValues.SetValue("currentQuality", currentQuality);
+
+                //Reset current MTBF
+                currentMTBF = BARISScenario.GetMaxMTBF(mtbf, mtbfCap, repairCount, mtbfRepairMultiplier, mtbfBonus);
+                qualityModuleSnapshots[index].moduleValues.SetValue("currentMTBF", currentMTBF);
+
+                //Increment repair count
+                repairCount += 1;
+                qualityModuleSnapshots[index].moduleValues.SetValue("repairCount", repairCount);
+
+                //Declare the part fixed
+                qualityModuleSnapshots[index].moduleValues.SetValue("isFixedOnStart", true);
+            }
+        }
+
+        public void AttemptRepairs()
+        {
+            int resultRoll = UnityEngine.Random.Range(1, 100);
+            int rndFacilityBonus = (int)Math.Round(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.ResearchAndDevelopment) * BARISScenario.BaseFacilityBonus);
+            int missionControlBonus = (int)Math.Round(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.MissionControl) * BARISScenario.BaseFacilityBonus);
+            string message;
+
+            //Add facility bonuses
+            resultRoll += rndFacilityBonus + missionControlBonus;
+
+            if (resultRoll >= BARISScenario.TigerTeamRepairTarget)
+            {
+                //Inform player of success
+                if (vessel.GetCrewCount() > 0)
+                    message = Localizer.Format(BARISScenario.TigerRepairSuccessMsg) + vessel.vesselName;
+                else
+                    message = Localizer.Format(BARISScenario.TigerRepairSuccessMsgUnmanned) + vessel.vesselName;
+                BARISScenario.Instance.LogPlayerMessage(message);
+
+                //Declare the vessel fixed
+                DeclareVesselFixed();
+            }
+
+            else
+            {
+                //Inform player of failure
+                message = Localizer.Format(BARISScenario.TigerRepairSuccessMsg) + vessel.vesselName + Localizer.Format(BARISScenario.TigerRepairTryAgainMsg);
+                BARISScenario.Instance.LogPlayerMessage(message);
+            }
+        }
+
+        public void CalculateRepairCosts()
+        {
+            ConfigNode snapshot;
+            int maxQuality = 0;
+            int integrationBonus = -1;
+            int flightExperienceBonus = BARISScenario.DefaultFlightBonus;
+            int qualityCap = -1;
+            int repairCount = 0;
+            int quality = 5;
+            int vabBonus = BARISScenario.Instance.GetIntegrationCap(true);
+            int sphBonus = BARISScenario.Instance.GetIntegrationCap(false);
+
+            for (int index = 0; index < qualityModuleSnapshots.Length; index++)
+            {
+                //Get the snapshot
+                snapshot = qualityModuleSnapshots[index].moduleValues;
+
+                //Setup default values
+                integrationBonus = -1;
+                flightExperienceBonus = BARISScenario.DefaultFlightBonus;
+                qualityCap = -1;
+                repairCount = 0;
+                quality = 5;
+
+                //Get the stats we need
+                if (snapshot.HasValue("quality"))
+                    quality = int.Parse(qualityModuleSnapshots[index].moduleValues.GetValue("quality"));
+                if (snapshot.HasValue("qualityCap"))
+                    qualityCap = int.Parse(qualityModuleSnapshots[index].moduleValues.GetValue("qualityCap"));
+                if (snapshot.HasValue("integrationBonus"))
+                    integrationBonus = int.Parse(qualityModuleSnapshots[index].moduleValues.GetValue("integrationBonus"));
+                if (snapshot.HasValue("flightExperienceBonus"))
+                    flightExperienceBonus = int.Parse(qualityModuleSnapshots[index].moduleValues.GetValue("flightExperienceBonus"));
+                if (snapshot.HasValue("repairCount"))
+                    repairCount = int.Parse(qualityModuleSnapshots[index].moduleValues.GetValue("repairCount"));
+
+                //Estimate integration bonus if needed.
+                if (integrationBonus == -1)
+                {
+                    if (vabBonus > sphBonus)
+                        integrationBonus = vabBonus;
+                    else
+                        integrationBonus = sphBonus;
+                }
+
+                //Accumulate max quality.
+                maxQuality += BARISScenario.GetMaxQuality(quality, integrationBonus, flightExperienceBonus, qualityCap, repairCount);
+            }
+
+            //Calculate the time
+            repairCostTime = Mathf.RoundToInt(maxQuality / BARISScenario.MaxWorkersPerBay);
+            if (repairCostTime <= BARISScenario.MinimumTigerTeamRepairDays)
+                repairCostTime = BARISScenario.MinimumTigerTeamRepairDays;
+
+            //Calculate the funding cost
+            repairCostFunds = repairCostTime * BARISScenario.MaxWorkersPerBay * BARISScenario.PayrollPerWorker;
+
+            //Calculate the science cost
+            repairCostScience = (float)repairCostTime;
+        }
+
+        public bool IsBroken()
+        {
+            int currentQuality = 0;
+
+            for (int index = 0; index < qualityModuleSnapshots.Length; index++)
+            {
+                currentQuality = int.Parse(qualityModuleSnapshots[index].moduleValues.GetValue("currentQuality"));
+                if (currentQuality == 0)
+                    return true;
+            }
+
+            return false;
         }
 
         public int UpdateSafetyRating()
