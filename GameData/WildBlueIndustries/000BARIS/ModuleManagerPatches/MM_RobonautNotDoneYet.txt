@@ -1,0 +1,62 @@
+//A key compoment of making Robonaut pretent to be a kerbal is the ability to set Vessel.isEVA to true. Sadly, we can't do that,
+//it's a computed property. I tried adding a KerbalEVA module but even after eliminiating all the NREs, and adding a ProtoCrewMember
+//to the part via the Roster, the game still won't set Vessel.isEVA to true. That means I currently can't make the Robonaut pretend to
+//be an engineer. The next best thing is to replicate the skill effects of an engineer, and that's what these patches do.
+
+//Replicates the ability to repair a damaged wheel.
+@PART[*]:HAS[@MODULE[ModuleWheelDamage]]:FOR[BARIS]:FINAL
+{
+	MODULE
+	{
+		name = ModuleRobonautWheelRepair
+	}
+}
+
+//Replicates the ability to repack a parachute.
+@PART[*]:HAS[@MODULE[ModuleParachute]]:FOR[BARIS]:FINAL
+{
+	MODULE
+	{
+		name = ModuleRobonautPackChute
+	}
+}
+
+//Replicates the ability to run, clean and reset experiments as well as collect their data.
+@PART[*]:HAS[@MODULE[ModuleScienceExperiment]]:FOR[BARIS]:FINAL
+{
+	MODULE
+	{
+		name = ModuleRobonautExperimentManager
+	}
+}
+
+@PART[WBI_AuxEN]:FOR[BARIS]:FINAL
+{
+	MODULE
+	{
+		name = ModuleRobonaut
+	}
+	MODULE
+	{
+		name = ModuleScienceExperiment
+		experimentID = surfaceSample
+		experimentActionName = #autoLOC_502018 //#autoLOC_502018 = Take Surface Sample
+		resetActionName = #autoLOC_502019 //#autoLOC_502019 = Discard Sample
+		reviewActionName = #autoLOC_502203 //#autoLOC_502203 = Review Sample
+		hideUIwhenUnavailable = True
+		rerunnable = True
+		resettable = True
+		resettableOnEVA = False
+		hideFxModuleUI = True
+		resourceToReset = Supplies
+		resourceResetCost = 5
+		xmitDataScalar = 0.25
+		dataIsCollectable = True
+		deployableSeated = False
+	}
+	MODULE
+	{
+		name = ModuleScienceContainer
+		allowRepeatedSubjects = True
+	}
+}

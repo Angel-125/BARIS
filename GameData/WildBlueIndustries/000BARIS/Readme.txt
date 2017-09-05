@@ -16,6 +16,16 @@ NOTE: ModuleManager is REQUIRED.
 
 ---REVISION HISTORY---
 
+1.3.6
+- Fixed issue where parts on an unloaded vessel weren't being correctly declared fixed during a Tiger Team repair.
+- Tiger Team repairs will optionally drop you out of timewarp once the research attempt is completed. See the Constants file to set the option.
+- Fixed Tiger Team wording that appears upon a failed attempt.
+- Tiger Team repairs now ensure that the repaired quality doesn't exceed the max quality.
+- Slight increase to the base chance of a Tiger Team repair attempt to balance fun and frustration factor.
+- Focus Vessel view no longer appears to report broken vessels that are in physics range.
+- Added broken vessel screen messages for any vessel in physics range that isn't the active vessel and that develops a problem.
+- Vessels classified as debris won't appear in the Tracking Station view or in the Focus Vessel view.
+
 1.3.5
 Tiger Teams
 - When vessels break, you can now go to the Tracking Station and assemble a Tiger Team on the ground to try to resolve the problem. Think of the brilliant engineers who came up with a plan to save Apollo 13. It will cost Funds, Science, and time. You also need a working CommNet connection to the vessel (if CommNet is enabled). There is no guarantee of success. In fact, the odds of success are pretty low. If successful, your Tiger Team will fix the striken vessel without the need for an onboard mechanic or the need for Equipment. If unsuccessful, you can assemble another Tiger Team and try to come up with a fresh perspective.
