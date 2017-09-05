@@ -2192,8 +2192,8 @@ namespace WildBlueIndustries
                         brokenModuleCount = int.Parse(moduleSnapshot.moduleValues.GetValue("breakableModuleCount"));
                         brokenModuleCount -= 1;
                         moduleSnapshot.moduleValues.SetValue("breakableModuleCount", brokenModuleCount);
-                        //Skip vessels marked as debris
-                        if (unloadedVessels[index].vesselType != VesselType.Debris)
+                        //Only add filtered vessels.
+                        if (BARISUtils.IsFilterEnabled(unloadedVessels[index]))
                         {
                             focusVesselView.flightGlobalIndexes.Add(index);
                             focusVesselView.vesselNames.Add(unloadedVessels[index].vesselName);
@@ -2216,8 +2216,8 @@ namespace WildBlueIndustries
                             brokenModuleCount = int.Parse(moduleSnapshot.moduleValues.GetValue("breakableModuleCount"));
                             brokenModuleCount -= 1;
                             moduleSnapshot.moduleValues.SetValue("breakableModuleCount", brokenModuleCount);
-                            //Skip vessels marked as debris.
-                            if (unloadedVessels[index].vesselType != VesselType.Debris)
+                            //Only add filtered vessels.
+                            if (BARISUtils.IsFilterEnabled(unloadedVessels[index]))
                             {
                                 focusVesselView.flightGlobalIndexes.Add(index);
                                 focusVesselView.vesselNames.Add(unloadedVessels[index].vesselName);

@@ -123,7 +123,7 @@ namespace WildBlueIndustries
                 if (qualitySummary == null)
                     continue;
                 //Skip vessels marked as debris.
-                if (qualitySummary.vessel.vesselType == VesselType.Debris)
+                if (!BARISUtils.IsFilterEnabled(qualitySummary.vessel))
                     continue;
                 
                 //Update the summary

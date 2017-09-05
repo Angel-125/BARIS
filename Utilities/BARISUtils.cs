@@ -199,4 +199,64 @@ namespace WildBlueIndustries
         /// </summary>
         public ModuleBreakableTransmitter breakableTransmitter;
     }
+
+    public class BARISUtils
+    {
+        public static bool IsFilterEnabled(Vessel vessel)
+        {
+            //For non-tracking station scenes we only allow a fixed set of vessels.
+            if (HighLogic.LoadedScene != GameScenes.TRACKSTATION)
+            {
+                switch (vessel.vesselType)
+                {
+                    case VesselType.Base:
+                    case VesselType.Lander:
+                    case VesselType.Plane:
+                    case VesselType.Probe:
+                    case VesselType.Relay:
+                    case VesselType.Rover:
+                    case VesselType.Ship:
+                        return true;
+
+                    default:
+                        return false;
+                }
+            }
+
+            //For the tracking station, we rely upon the filter buttons.
+            MapViewFiltering.VesselTypeFilter vesselTypeFilter = MapViewFiltering.vesselTypeFilter;
+
+            if (vesselTypeFilter == MapViewFiltering.VesselTypeFilter.All)
+                return true;
+            if (vesselTypeFilter == MapViewFiltering.VesselTypeFilter.None)
+                return false;
+
+            switch (vessel.vesselType)
+            {
+                case VesselType.Base:
+                    return (vesselTypeFilter & MapViewFiltering.VesselTypeFilter.Bases) > 0 ? true : false;
+
+                case VesselType.Lander:
+                    return (vesselTypeFilter & MapViewFiltering.VesselTypeFilter.Landers) > 0 ? true : false;
+
+                case VesselType.Plane:
+                    return (vesselTypeFilter & MapViewFiltering.VesselTypeFilter.Plane) > 0 ? true : false;
+
+                case VesselType.Probe:
+                    return (vesselTypeFilter & MapViewFiltering.VesselTypeFilter.Probes) > 0 ? true : false;
+
+                case VesselType.Relay:
+                    return (vesselTypeFilter & MapViewFiltering.VesselTypeFilter.Relay) > 0 ? true : false;
+
+                case VesselType.Rover:
+                    return (vesselTypeFilter & MapViewFiltering.VesselTypeFilter.Rovers) > 0 ? true : false;
+
+                case VesselType.Ship:
+                    return (vesselTypeFilter & MapViewFiltering.VesselTypeFilter.Ships) > 0 ? true : false;
+
+                default:
+                    return false;
+            }
+        }
+    }
 }
