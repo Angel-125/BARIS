@@ -157,20 +157,25 @@ namespace WildBlueIndustries
                         integrationBonus = sphBonus;
                 }
 
-                //Reset current quality
-                currentQuality = BARISScenario.GetMaxQuality(quality, integrationBonus, flightExperienceBonus, qualityCap, repairCount);
-                qualityModuleSnapshots[index].moduleValues.SetValue("currentQuality", currentQuality);
-
-                //Reset current MTBF
-                currentMTBF = BARISScenario.GetMaxMTBF(mtbf, mtbfCap, repairCount, mtbfRepairMultiplier, mtbfBonus);
-                qualityModuleSnapshots[index].moduleValues.SetValue("currentMTBF", currentMTBF);
-
                 //Increment repair count
                 repairCount += 1;
                 qualityModuleSnapshots[index].moduleValues.SetValue("repairCount", repairCount);
 
+                //Reset current quality
+                currentQuality = BARISScenario.GetMaxQuality(quality, integrationBonus, flightExperienceBonus, qualityCap, repairCount);
+                if (currentQuality > quality)
+                    currentQuality = quality;
+                qualityModuleSnapshots[index].moduleValues.SetValue("currentQuality", currentQuality);
+
+                //Reset current MTBF
+                currentMTBF = BARISScenario.GetMaxMTBF(mtbf, mtbfCap, repairCount, mtbfRepairMultiplier, mtbfBonus);
+                if (currentMTBF > mtbf)
+                    currentMTBF = mtbf;
+                qualityModuleSnapshots[index].moduleValues.SetValue("currentMTBF", currentMTBF);
+
                 //Declare the part fixed
                 qualityModuleSnapshots[index].moduleValues.SetValue("isFixedOnStart", true);
+                qualityModuleSnapshots[index].moduleValues.SetValue("isBrokenOnStart", false);
             }
         }
 
@@ -200,9 +205,13 @@ namespace WildBlueIndustries
             else
             {
                 //Inform player of failure
-                message = Localizer.Format(BARISScenario.TigerRepairSuccessMsg) + vessel.vesselName + Localizer.Format(BARISScenario.TigerRepairTryAgainMsg);
+                message = Localizer.Format(BARISScenario.TigerRepairFailMsg) + vessel.vesselName + Localizer.Format(BARISScenario.TigerRepairTryAgainMsg);
                 BARISScenario.Instance.LogPlayerMessage(message);
             }
+
+            //Kill timewarp
+            if (BARISScenario.KillTimewarpOnTigerTeamCompleted && TimeWarp.CurrentRateIndex >= BARISScenario.HighTimewarpIndex)
+                TimeWarp.SetRate(0, true);
         }
 
         public void CalculateRepairCosts()

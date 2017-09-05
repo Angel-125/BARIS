@@ -80,6 +80,10 @@
     <Compile Include="Caching\LoadedQualitySummary.cs" />
     <Compile Include="LaunchFailure\ModuleEscapePod.cs" />
     <Compile Include="LaunchFailure\ModuleLESEngine.cs" />
+    <Compile Include="Robonaut\ModuleRobonautExperimentManager.cs" />
+    <Compile Include="Robonaut\ModuleRobonautPackChute.cs" />
+    <Compile Include="Robonaut\ModuleRobonaut.cs" />
+    <Compile Include="Robonaut\ModuleRobonautWheelRepair.cs" />
     <Compile Include="SettingsAndScenario\BARISBreakableParts.cs" />
     <Compile Include="LaunchFailure\BARISLaunchFailManager.cs" />
     <Compile Include="BreakablePartModules\ModuleBreakableFuelTank.cs" />

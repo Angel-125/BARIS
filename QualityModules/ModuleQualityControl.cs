@@ -253,7 +253,7 @@ namespace WildBlueIndustries
         /// Additionally, the mechanic must have the minimum skill level. This event is always available to an astronaut on EVA, but it might not be available to kerbals inside the vessel depending upon
         /// the difficulty settings. Regardless, the repair button won't be available until a part has been declared broken.
         /// </summary>
-        [KSPEvent(guiActive = true, guiActiveUnfocused = true, unfocusedRange = 5.0f, guiName = "Repair Part")]
+        [KSPEvent(guiActive = true, guiActiveUnfocused = true, externalToEVAOnly = false, unfocusedRange = 5.0f, guiName = "Repair Part")]
         public override void RepairPart()
         {
             double repairUnits = getRepairUnits(repairMassPercent);
@@ -297,7 +297,7 @@ namespace WildBlueIndustries
         /// In order to perform maintenance, the vessel must have sufficient resources, and the astronaut must have sufficient skill (both the required skill and required rank). The event button is
         /// always available to astronauts on EVA but might not be available to kerbals inside the vessel depending upon difficulty settings.
         /// </summary>
-        [KSPEvent(guiActive = true, guiActiveUnfocused = true, unfocusedRange = 5.0f, guiName = "Perform Maintenance")]
+        [KSPEvent(guiActive = true, guiActiveUnfocused = true, externalToEVAOnly = false, unfocusedRange = 5.0f, guiName = "Perform Maintenance")]
         public override void PerformMaintenance()
         {
             double maintenanceUnits = getRepairUnits(maintenanceMassPercent);
@@ -1319,7 +1319,9 @@ namespace WildBlueIndustries
             ProtoCrewMember astronaut;
             int highestSkill = 0;
 
-            if (FlightGlobals.ActiveVessel.isEVA)
+            if (FlightGlobals.ActiveVessel.FindPartModuleImplementing<ModuleRobonaut>())
+                return true;
+            else if (FlightGlobals.ActiveVessel.isEVA)
                 highestSkill = BARISScenario.Instance.GetHighestRank(FlightGlobals.ActiveVessel, maintenanceSkill, out astronaut);
             else
                 highestSkill = BARISScenario.Instance.GetHighestRank(this.part.vessel, maintenanceSkill, out astronaut);

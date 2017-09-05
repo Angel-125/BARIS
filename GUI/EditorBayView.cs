@@ -442,6 +442,20 @@ namespace WildBlueIndustries
             if (GUILayout.Button(launchIcon, buttonOptions))
             {
                 loadVessel(editorBayItem);
+
+                /*
+                //Launch the vessel. This will fill the ship with a default crew, which isn't what we want.
+                if (isVAB)
+                    HighLogic.CurrentGame.editorFacility = EditorFacility.VAB;
+                else
+                    HighLogic.CurrentGame.editorFacility = EditorFacility.SPH;
+                
+                VesselCrewManifest manifest = KSP.UI.CrewAssignmentDialog.Instance.GetManifest();
+                if (manifest == null)
+                    manifest = HighLogic.CurrentGame.CrewRoster.DefaultCrewForVessel(EditorLogic.fetch.ship.SaveShip(), null, true);
+
+                FlightDriver.StartWithNewLaunch(editorBayItem.vesselFilePath, EditorLogic.FlagURL, EditorLogic.fetch.launchSiteName, manifest);
+                 */
             }
             launchIcon = selectLoadIcon();
             GUI.backgroundColor = oldColor;

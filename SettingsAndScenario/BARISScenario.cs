@@ -202,7 +202,12 @@ namespace WildBlueIndustries
         /// <summary>
         /// Target number required for a tiger team to successfully remotely repair a vessel.
         /// </summary>
-        public static int TigerTeamRepairTarget = 90;
+        public static int TigerTeamRepairTarget = 75;
+
+        /// <summary>
+        /// Flag to indicate that BARIS should kill the timewarp when a Tiger Team completes a research attempt.
+        /// </summary>
+        public static bool KillTimewarpOnTigerTeamCompleted = true;
 
         /// <summary>
         /// Default integration bonus for when a part is created in the field.
@@ -2187,8 +2192,12 @@ namespace WildBlueIndustries
                         brokenModuleCount = int.Parse(moduleSnapshot.moduleValues.GetValue("breakableModuleCount"));
                         brokenModuleCount -= 1;
                         moduleSnapshot.moduleValues.SetValue("breakableModuleCount", brokenModuleCount);
-                        focusVesselView.flightGlobalIndexes.Add(index);
-                        focusVesselView.vesselNames.Add(unloadedVessels[index].vesselName);
+                        //Skip vessels marked as debris
+                        if (unloadedVessels[index].vesselType != VesselType.Debris)
+                        {
+                            focusVesselView.flightGlobalIndexes.Add(index);
+                            focusVesselView.vesselNames.Add(unloadedVessels[index].vesselName);
+                        }
                         if (BARISSettings.KillTimewarpOnBreak && TimeWarp.CurrentRateIndex >= HighTimewarpIndex)
                             TimeWarp.SetRate(0, true);
                         vesselHadAProblem = true;
@@ -2207,8 +2216,12 @@ namespace WildBlueIndustries
                             brokenModuleCount = int.Parse(moduleSnapshot.moduleValues.GetValue("breakableModuleCount"));
                             brokenModuleCount -= 1;
                             moduleSnapshot.moduleValues.SetValue("breakableModuleCount", brokenModuleCount);
-                            focusVesselView.flightGlobalIndexes.Add(index);
-                            focusVesselView.vesselNames.Add(unloadedVessels[index].vesselName);
+                            //Skip vessels marked as debris.
+                            if (unloadedVessels[index].vesselType != VesselType.Debris)
+                            {
+                                focusVesselView.flightGlobalIndexes.Add(index);
+                                focusVesselView.vesselNames.Add(unloadedVessels[index].vesselName);
+                            }
                             if (BARISSettings.KillTimewarpOnBreak && TimeWarp.CurrentRateIndex >= HighTimewarpIndex)
                                 TimeWarp.SetRate(0, true);
                             vesselHadAProblem = true;
@@ -2249,7 +2262,7 @@ namespace WildBlueIndustries
                         break;
                 }
 
-                //Show the vessel switch dialog, but only if there's at least one vessel that has a problem.
+                //Show the vessel switch dialog, but only if there's at least one vessel that has a problem and it isn't the active vessel.
                 if (focusVesselView.flightGlobalIndexes.Count > 0)
                     focusVesselView.SetVisible(true);
 
@@ -2276,6 +2289,7 @@ namespace WildBlueIndustries
             ModuleQualityControl[] failureCandidates;
             ModuleQualityControl qualityControl;
             bool createdNewRecord;
+            List<string> brokenVesselNames = new List<string>();
 
             //Go through all the unloaded vessels and make the quality check.
             for (int index = 0; index < loadedVessels.Length; index++)
@@ -2300,8 +2314,8 @@ namespace WildBlueIndustries
                 {
                     //Select one of the parts to fail.
                     case QualityCheckStatus.criticalFail:
-                        focusVesselView.flightGlobalIndexes.Add(index);
-                        focusVesselView.vesselNames.Add(loadedVessels[index].vesselName);
+                        if (loadedVessels[index] != FlightGlobals.ActiveVessel)
+                            brokenVesselNames.Add(loadedVessels[index].vesselName);
                         failedPartIndex = UnityEngine.Random.Range(0, qualitySummary.qualityModules.Length - 1);
                         qualityControl = qualitySummary.qualityModules[failedPartIndex];
                         if (!qualityControl.IsBroken)
@@ -2315,8 +2329,8 @@ namespace WildBlueIndustries
                     case QualityCheckStatus.fail:
                         if (failureCandidates != null)
                         {
-                            focusVesselView.flightGlobalIndexes.Add(index);
-                            focusVesselView.vesselNames.Add(loadedVessels[index].vesselName);
+                            if (loadedVessels[index] != FlightGlobals.ActiveVessel)
+                                brokenVesselNames.Add(loadedVessels[index].vesselName);
                             failedPartIndex = UnityEngine.Random.Range(0, failureCandidates.Length - 1);
                             qualityControl = failureCandidates[failedPartIndex];
                             if (!qualityControl.IsBroken)
@@ -2359,10 +2373,13 @@ namespace WildBlueIndustries
                         break;
                 }
 
-                //Show the vessel switch dialog, but only if there's more than one vessel that has a problem.
-                //If we only have one vessel then it's the active vessel.
-                if (focusVesselView.flightGlobalIndexes.Count > 1)
-                    focusVesselView.SetVisible(true);
+                //If there are loaded vessels that have broken that aren't the active vessel then list them out.
+                if (brokenVesselNames.Count > 0)
+                {
+                    LogPlayerMessage(Localizer.Format(AVesselHasAProblem));
+                    foreach (string vesselName in brokenVesselNames)
+                        LogPlayerMessage(vesselName + Localizer.Format(VesselHasProblem));
+                }
 
                 //Get ready to process the next vessel
                 yield return new WaitForFixedUpdate();
@@ -2936,6 +2953,9 @@ namespace WildBlueIndustries
 
             if (node.HasValue("TigerTeamRepairTarget"))
                 TigerTeamRepairTarget = int.Parse(node.GetValue("TigerTeamRepairTarget"));
+
+            if (node.HasValue("KillTimewarpOnTigerTeamCompleted"))
+                KillTimewarpOnTigerTeamCompleted = bool.Parse(node.GetValue("KillTimewarpOnTigerTeamCompleted"));
 
             if (node.HasValue("CriticalFailRoll"))
                 CriticalFailRoll = int.Parse(node.GetValue("CriticalFailRoll"));

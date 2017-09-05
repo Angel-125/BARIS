@@ -121,9 +121,10 @@ namespace WildBlueIndustries
                 //Get the summary info.
                 qualitySummary = BARISScenario.Instance.GetUnloadedQualitySummary(unloadedVessels[index], out createdNewRecord);
                 if (qualitySummary == null)
-                {
                     continue;
-                }
+                //Skip vessels marked as debris.
+                if (qualitySummary.vessel.vesselType == VesselType.Debris)
+                    continue;
                 
                 //Update the summary
                 qualitySummary.UpdateAndGetFailureCandidates(0);
