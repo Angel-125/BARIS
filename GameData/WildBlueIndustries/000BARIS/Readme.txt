@@ -16,7 +16,13 @@ NOTE: ModuleManager is REQUIRED.
 
 ---REVISION HISTORY---
 
+1.3.8
+- Fix for KCT vehicle integration.
+
 1.3.7
+- Tracking Station view now displays vehicle healths based upon the enabled filter buttons.
+
+1.3.6
 - Fixed issue where parts on an unloaded vessel weren't being correctly declared fixed during a Tiger Team repair.
 - Tiger Team repairs will optionally drop you out of timewarp once the research attempt is completed. See the Constants file to set the option.
 - Fixed Tiger Team wording that appears upon a failed attempt.
@@ -24,7 +30,7 @@ NOTE: ModuleManager is REQUIRED.
 - Slight increase to the base chance of a Tiger Team repair attempt to balance fun and frustration factor.
 - Focus Vessel view no longer appears to report broken vessels that are in physics range.
 - Added broken vessel screen messages for any vessel in physics range that isn't the active vessel and that develops a problem.
-- Tracking Station view now displays vehicle healths based upon the enabled filter buttons.
+- Vessels classified as debris won't appear in the Tracking Station view or in the Focus Vessel view.
 
 1.3.5
 Tiger Teams

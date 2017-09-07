@@ -41,7 +41,10 @@ namespace WildBlueIndustries
             }
 
             //Repack the chute.
+            bool experienceEnabled = HighLogic.CurrentGame.Parameters.CustomParams<GameParameters.AdvancedParams>().EnableKerbalExperience;
+            HighLogic.CurrentGame.Parameters.CustomParams<GameParameters.AdvancedParams>().EnableKerbalExperience = false;
             parachute.Repack();
+            HighLogic.CurrentGame.Parameters.CustomParams<GameParameters.AdvancedParams>().EnableKerbalExperience = experienceEnabled;
         }
 
         public override void OnUpdate()

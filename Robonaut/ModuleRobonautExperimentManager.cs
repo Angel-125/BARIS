@@ -40,7 +40,10 @@ namespace WildBlueIndustries
                 return;
             }
 
+            bool experienceEnabled = HighLogic.CurrentGame.Parameters.CustomParams<GameParameters.AdvancedParams>().EnableKerbalExperience;
+            HighLogic.CurrentGame.Parameters.CustomParams<GameParameters.AdvancedParams>().EnableKerbalExperience = false;
             experiment.DeployExperimentExternal();
+            HighLogic.CurrentGame.Parameters.CustomParams<GameParameters.AdvancedParams>().EnableKerbalExperience = experienceEnabled;
         }
 
         [KSPEvent(guiName = "Collect Result Data", guiActiveUnfocused = true, guiActive = false, externalToEVAOnly = false, unfocusedRange = 4f)]
@@ -65,7 +68,10 @@ namespace WildBlueIndustries
                 return;
             }
 
+            bool experienceEnabled = HighLogic.CurrentGame.Parameters.CustomParams<GameParameters.AdvancedParams>().EnableKerbalExperience;
+            HighLogic.CurrentGame.Parameters.CustomParams<GameParameters.AdvancedParams>().EnableKerbalExperience = false;
             experiment.CollectDataExternalEvent();
+            HighLogic.CurrentGame.Parameters.CustomParams<GameParameters.AdvancedParams>().EnableKerbalExperience = experienceEnabled;
         }
 
         [KSPEvent(guiName = "#autoLOC_900305", guiActiveUnfocused = true, guiActive = false, externalToEVAOnly = false, unfocusedRange = 4f)]
@@ -82,7 +88,10 @@ namespace WildBlueIndustries
                 return;
             }
 
+            bool experienceEnabled = HighLogic.CurrentGame.Parameters.CustomParams<GameParameters.AdvancedParams>().EnableKerbalExperience;
+            HighLogic.CurrentGame.Parameters.CustomParams<GameParameters.AdvancedParams>().EnableKerbalExperience = false;
             experiment.ResetExperiment();
+            HighLogic.CurrentGame.Parameters.CustomParams<GameParameters.AdvancedParams>().EnableKerbalExperience = experienceEnabled;
         }
 
         public override void OnStart(StartState state)

@@ -1088,62 +1088,8 @@ namespace WildBlueIndustries
 
             //Initial setup: currentQuality won't be set up when the part is first created
             //so we need to do that.
-            if (currentQuality == -1)
-            {
-                //If this vessel was created in flight, or KCT is installed, or we don't do vehicle integration, then we just max out the integration bonus.
-                if (BARISScenario.isKCTInstalled || !BARISSettingsLaunch.VesselsNeedIntegration || HighLogic.LoadedSceneIsFlight)
-                {
-                    //If we're in flight, use the best of VAB or SPH bonus.
-                    if (HighLogic.LoadedSceneIsFlight)
-                    {
-                        int vabBonus = BARISScenario.Instance.GetIntegrationCap(true);
-                        int sphBonus = BARISScenario.Instance.GetIntegrationCap(false);
-
-                        if (vabBonus > sphBonus)
-                            integrationBonus = vabBonus;
-                        else
-                            integrationBonus = sphBonus;
-                    }
-
-                    //If we're in the editor, then use the appropriate bonus.
-                    else if (HighLogic.LoadedSceneIsEditor)
-                    {
-                        bool isVAB = false;
-                        if (EditorLogic.fetch.ship.shipFacility == EditorFacility.VAB)
-                            isVAB = true;
-
-                        integrationBonus = BARISScenario.Instance.GetIntegrationCap(isVAB);
-                    }
-                }
-
-                //Flight experience bonus applies knowledge gained from parts that flew before.
-                flightExperienceBonus = BARISScenario.Instance.GetFlightBonus(this.part);
-
-                //If we have no flight experience, and we're in flight, then set a default.
-                if (flightExperienceBonus == 0 && HighLogic.LoadedSceneIsFlight)
-                {
-                    BARISScenario.Instance.RecordFlightExperience(this.part, BARISScenario.DefaultFlightBonus * BARISSettingsLaunch.FlightsPerQualityBonus);
-                    flightExperienceBonus = BARISScenario.DefaultFlightBonus;
-                }
-
-                //MTBF bonus
-                mtbfBonus = BARISScenario.Instance.GetMTBFBonus(this.part, mtbf);
-
-                currentQuality = MaxQuality;
-                currentMTBF = MaxMTBF;
-            }
-
-            //KLUDGE! Part upgrades increase MTBF but don't get registered in the editor.
-            if (HighLogic.LoadedSceneIsFlight)
-            {
-                if (this.part.vessel.situation == Vessel.Situations.PRELAUNCH && currentMTBF != mtbf)
-                {
-                    currentQuality = MaxQuality;
-                    currentMTBF = MaxMTBF;
-                }
-            }
-
             //Update the display
+            setInitialQuality();
             UpdateQualityDisplay(BARISScenario.GetConditionSummary(currentMTBF, MaxMTBF, currentQuality, MaxQuality));
 
             //Setup the gui
@@ -1239,6 +1185,72 @@ namespace WildBlueIndustries
         #endregion
 
         #region Helpers
+        protected void setInitialQuality()
+        {
+            bool vesselIsPreLaunch = false;
+
+            if (this.part.vessel != null)
+            {
+                if (this.part.vessel.situation == Vessel.Situations.PRELAUNCH)
+                    vesselIsPreLaunch = true;
+            }
+
+            if (currentQuality == -1 || (BARISScenario.isKCTInstalled && vesselIsPreLaunch))
+            {
+                //If this vessel was created in flight, or KCT is installed, or we don't do vehicle integration, then we just max out the integration bonus.
+                if (BARISScenario.isKCTInstalled || !BARISSettingsLaunch.VesselsNeedIntegration || HighLogic.LoadedSceneIsFlight)
+                {
+                    //If we're in flight, use the best of VAB or SPH bonus.
+                    if (HighLogic.LoadedSceneIsFlight)
+                    {
+                        int vabBonus = BARISScenario.Instance.GetIntegrationCap(true);
+                        int sphBonus = BARISScenario.Instance.GetIntegrationCap(false);
+
+                        if (vabBonus > sphBonus)
+                            integrationBonus = vabBonus;
+                        else
+                            integrationBonus = sphBonus;
+                    }
+
+                    //If we're in the editor, then use the appropriate bonus.
+                    else if (HighLogic.LoadedSceneIsEditor)
+                    {
+                        bool isVAB = false;
+                        if (EditorLogic.fetch.ship.shipFacility == EditorFacility.VAB)
+                            isVAB = true;
+
+                        integrationBonus = BARISScenario.Instance.GetIntegrationCap(isVAB);
+                    }
+                }
+
+                //Flight experience bonus applies knowledge gained from parts that flew before.
+                flightExperienceBonus = BARISScenario.Instance.GetFlightBonus(this.part);
+
+                //If we have no flight experience, and we're in flight, then set a default.
+                if (flightExperienceBonus == 0 && HighLogic.LoadedSceneIsFlight)
+                {
+                    BARISScenario.Instance.RecordFlightExperience(this.part, BARISScenario.DefaultFlightBonus * BARISSettingsLaunch.FlightsPerQualityBonus);
+                    flightExperienceBonus = BARISScenario.DefaultFlightBonus;
+                }
+
+                //MTBF bonus
+                mtbfBonus = BARISScenario.Instance.GetMTBFBonus(this.part, mtbf);
+
+                currentQuality = MaxQuality;
+                currentMTBF = MaxMTBF;
+            }
+
+            //KLUDGE! Part upgrades increase MTBF but don't get registered in the editor.
+            if (HighLogic.LoadedSceneIsFlight)
+            {
+                if (this.part.vessel.situation == Vessel.Situations.PRELAUNCH && currentMTBF != mtbf)
+                {
+                    currentQuality = MaxQuality;
+                    currentMTBF = MaxMTBF;
+                }
+            }
+        }
+
         protected void monitorConvertersTimeTick()
         {
             bool convertersAreActive = false;
