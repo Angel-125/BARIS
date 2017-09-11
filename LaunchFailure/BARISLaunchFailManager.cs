@@ -110,7 +110,7 @@ namespace WildBlueIndustries
         {
             debugLog("Awake called");
             Instance = this;
-            GameEvents.onLaunch.Add(onLaunch);
+//            GameEvents.onLaunch.Add(onLaunch);
             GameEvents.onStageActivate.Add(onStageActivate);
             GameEvents.onStageSeparation.Add(onStageSeparation);
 
@@ -138,7 +138,7 @@ namespace WildBlueIndustries
 
         public void Destroy()
         {
-            GameEvents.onLaunch.Remove(onLaunch);
+//            GameEvents.onLaunch.Remove(onLaunch);
             GameEvents.onStageActivate.Remove(onStageActivate);
             GameEvents.onStageSeparation.Remove(onStageSeparation);
         }

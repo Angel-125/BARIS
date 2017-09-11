@@ -311,16 +311,8 @@ namespace WildBlueIndustries
             //Reliability
             GUILayout.Label("<color=white><b>" + Localizer.Format(BARISScenario.ReliabilityLabel) + "</b>" + editorBayItem.baseReliability + "/" + editorBayItem.maxReliability + "</color>");
 
-            //Build Time
-            if (editorBayItem.workerCount > 0)
-            {
-                int buildTime = editorBayItem.totalIntegrationToAdd / editorBayItem.workerCount;
-                GUILayout.Label("<color=white><b>" + Localizer.Format(BARISScenario.BuildTimeLabel1) + "</b>" + buildTime + Localizer.Format(BARISScenario.BuildTimeLabel2) + "</color>");
-            }
-            else
-            {
-                GUILayout.Label("<color=white><b>" + Localizer.Format(BARISScenario.BuildTimeLabel1) + "</b>N/A</color>");
-            }
+            //Build Time Status
+            GUILayout.Label(VehicleIntegrationStatusView.GetIntegrationStatusLabel(editorBayItem));
         }
 
         protected void drawRushJobButton(EditorBayItem editorBayItem)
@@ -473,6 +465,11 @@ namespace WildBlueIndustries
 
                 //Delete the vessel file
                 editorBayItem.DeleteSnapshot();
+
+                BARISScenario.Instance.SetEditorBay(editorBayItem);
+
+                //Save the game
+                GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
             }
             exitIcon = selectExitIcon();
             GUI.backgroundColor = oldColor;

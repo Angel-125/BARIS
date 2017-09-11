@@ -103,17 +103,35 @@ namespace WildBlueIndustries
             //Reliability
             GUILayout.Label("<color=white><b>" + Localizer.Format(BARISScenario.ReliabilityLabel) + "</b>" + editorBayItem.baseReliability + "/" + editorBayItem.maxReliability + "</color>");
 
-            //Build Time
-            if (editorBayItem.workerCount > 0)
-            {
-                int buildTime = editorBayItem.totalIntegrationToAdd / editorBayItem.workerCount;
-                GUILayout.Label("<color=white><b>" + Localizer.Format(BARISScenario.BuildTimeLabel1) + "</b>" + buildTime + Localizer.Format(BARISScenario.BuildTimeLabel2) + "</color>");
-            }
-            else
-            {
-                GUILayout.Label("<color=white><b>" + Localizer.Format(BARISScenario.BuildTimeLabel1) + "</b>N/A</color>");
-            }
+            //Build Time Status
+            GUILayout.Label(GetIntegrationStatusLabel(editorBayItem));
         }
 
+        public static string GetIntegrationStatusLabel(EditorBayItem editorBayItem)
+        {
+            //Build Time
+            if (editorBayItem.totalIntegrationToAdd > 0 && editorBayItem.workerCount > 0)
+            {
+                int buildTime = editorBayItem.totalIntegrationToAdd / editorBayItem.workerCount;
+                if (buildTime > 1)
+                    return "<color=white><b>" + Localizer.Format(BARISScenario.BuildTimeLabel) + "</b>" + buildTime + Localizer.Format(BARISScenario.BuildTimeLabelDays) + "</color>";
+                else if (buildTime == 1)
+                    return "<color=white><b>" + Localizer.Format(BARISScenario.BuildTimeLabel) + "</b>" + buildTime + Localizer.Format(BARISScenario.BuildTimeLabelOneDay) + "</color>";
+                else
+                    return "<color=white><b>" + Localizer.Format(BARISScenario.BuildTimeLabel) + "</b>" + Localizer.Format(BARISScenario.BuildTimeLabelLessDay) + "</color>";
+            }
+
+            //Vessel is completed.
+            else if (editorBayItem.totalIntegrationToAdd == 0)
+            {
+                return "<color=white><b>" + Localizer.Format(BARISScenario.BuildTimeLabelStatus) + "</b>" + Localizer.Format(BARISScenario.BuildTimeLabelDone) + "</color>";
+            }
+
+            //No workers.
+            else
+            {
+                return "<color=white><b>" + Localizer.Format(BARISScenario.BuildTimeLabelStatus) + "</b>" + Localizer.Format(BARISScenario.BuildTimeLabelNeedsWorkers) + "</color>";
+            }
+        }
     }
 }

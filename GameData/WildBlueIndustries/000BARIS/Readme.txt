@@ -16,7 +16,17 @@ NOTE: ModuleManager is REQUIRED.
 
 ---REVISION HISTORY---
 
-1.3.8
+1.3.9.2 PRE-RELEASE
+- Removed overall vessel reliability check that was set up during launch; it wasn't doing much except causing people to complain that their launches failed near the end of their flight to orbit.
+- Fixed vessel modified spam that occurs when you attempt to modify a vessel after it has been integrated.
+- Vessel integration completed dialog no longer shows integration bays that are empty.
+- Edited vehicle integration status messages to improve clarity.
+
+1.3.9.1 PRE-RELEASE
+- Reworked MM patches to exclude command pods, cockpits, and probe cores from part failures. Investigating an alternate means to add them back in as an option.
+- Replaced individual MM patches for fuel tank resources with a generic patch.
+
+1.3.8 PRE-RELEASE
 - Fix for KCT vehicle integration.
 
 1.3.7

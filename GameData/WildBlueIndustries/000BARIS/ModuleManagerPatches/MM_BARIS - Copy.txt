@@ -2,7 +2,8 @@
 //The ModuleBreakableXXX MODULE entry is always added after the part module that it monitors. For instance,
 //ModuleBreakableEngine appears in the config file after ModuleEngines and ModuleEnginesFX.
 
-@PART[*]:HAS[!MODULE[ModuleCommand],!RESOURCE[ElectricCharge],!MODULE[ModuleBreakableFuelTank],@RESOURCE[*]]:FOR[BARIS]
+//Any part categorized as a fuel tank gets the ModuleBreakableFuelTank
+@PART[*]:HAS[#category[FuelTank],!MODULE[ModuleBreakableFuelTank]]:FOR[BARIS]
 {
 	MODULE
 	{
@@ -28,7 +29,7 @@
 	}
 }
 
-@PART[*]:HAS[@MODULE[ModuleReactionWheel],!MODULE[ModuleCommand],!MODULE[ModuleBreakableSAS]]:FOR[BARIS]
+@PART[*]:HAS[@MODULE[ModuleReactionWheel],!MODULE[ModuleBreakableSAS]]:FOR[BARIS]
 {
 	MODULE
 	{
@@ -37,7 +38,7 @@
 	}
 }
 
-@PART[*]:HAS[@MODULE[ModuleRCS],!MODULE[ModuleCommand],!MODULE[ModuleBreakableRCS]]:FOR[BARIS]
+@PART[*]:HAS[@MODULE[ModuleRCS],!MODULE[ModuleBreakableRCS]]:FOR[BARIS]
 {
 	MODULE
 	{
@@ -46,7 +47,7 @@
 	}
 }
 
-@PART[*]:HAS[@MODULE[ModuleRCSFX],!MODULE[ModuleCommand],!MODULE[ModuleBreakableRCS]]:FOR[BARIS]
+@PART[*]:HAS[@MODULE[ModuleRCSFX],!MODULE[ModuleBreakableRCS]]:FOR[BARIS]
 {
 	MODULE
 	{
@@ -55,12 +56,77 @@
 	}
 }
 
-@PART[*]:HAS[@MODULE[ModuleDataTransmitter],!MODULE[ModuleCommand],!MODULE[ModuleBreakableTransmitter]]:FOR[BARIS]
+@PART[*]:HAS[@MODULE[ModuleDataTransmitter],!MODULE[ModuleBreakableTransmitter]]:FOR[BARIS]
 {
 	MODULE
 	{
 		name = ModuleBreakableTransmitter
 		qualityCheckSkill = ScienceSkill
+	}
+}
+
+//Fuel tanks that don't fall in the FuelTank category - thanks Hotaru!
+@PART[*]:HAS[@RESOURCE[LiquidFuel],!MODULE[ModuleBreakableFuelTank]]:FOR[BARIS]
+{
+	MODULE
+	{
+		name = ModuleBreakableFuelTank
+	}
+}
+
+@PART[*]:HAS[@RESOURCE[MonoPropellant],!MODULE[ModuleBreakableFuelTank]]:FOR[BARIS]
+{
+	MODULE
+	{
+		name = ModuleBreakableFuelTank
+	}
+}
+
+@PART[*]:HAS[@RESOURCE[XenonGas],!MODULE[ModuleBreakableFuelTank]]:FOR[BARIS]
+{
+	MODULE
+	{
+		name = ModuleBreakableFuelTank
+	}
+}
+
+@PART[*]:HAS[@RESOURCE[Hydrogen],!MODULE[ModuleBreakableFuelTank]]:FOR[BARIS]
+{
+	MODULE
+	{
+		name = ModuleBreakableFuelTank
+	}
+}
+
+@PART[*]:HAS[@RESOURCE[Oxygen],!MODULE[ModuleBreakableFuelTank]]:FOR[BARIS]
+{
+	MODULE
+	{
+		name = ModuleBreakableFuelTank
+	}
+}
+
+@PART[*]:HAS[@RESOURCE[ArgonGas],!MODULE[ModuleBreakableFuelTank]]:FOR[BARIS]
+{
+	MODULE
+	{
+		name = ModuleBreakableFuelTank
+	}
+}
+
+@PART[*]:HAS[@RESOURCE[LqdHydrogen],!MODULE[ModuleBreakableFuelTank]]:FOR[BARIS]
+{
+	MODULE
+	{
+		name = ModuleBreakableFuelTank
+	}
+}
+
+@PART[*]:HAS[@RESOURCE[Glykerol],!MODULE[ModuleBreakableFuelTank]]:FOR[BARIS]
+{
+	MODULE
+	{
+		name = ModuleBreakableFuelTank
 	}
 }
 

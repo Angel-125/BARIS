@@ -417,8 +417,13 @@ namespace WildBlueIndustries
         public static string WorkersQuitMessage = "The Workers Union quits due to lack of pay!";
         public static string AstronautsQuitMessage = " has quit due to lack of pay!";
         public static string WorkersWorkingLabel = " working";
-        public static string BuildTimeLabel1 = "Build Time: ";
-        public static string BuildTimeLabel2 = " days";
+        public static string BuildTimeLabel = "Build Time: ";
+        public static string BuildTimeLabelDays = " days";
+        public static string BuildTimeLabelOneDay = " day";
+        public static string BuildTimeLabelLessDay = "Less than a day";
+        public static string BuildTimeLabelStatus = "Status: ";
+        public static string BuildTimeLabelNeedsWorkers = "Needs workers";
+        public static string BuildTimeLabelDone = "Completed";
         public static string VesselsCompletedTitle = "Vessel Integration Completed";
         public static string VesselsCompletedMsg = "The following vessels have completed their integration:";
         public static string VesselBuildCompleteMsg = " has completed vehicle integration.";
@@ -1138,6 +1143,10 @@ namespace WildBlueIndustries
             //Or as many as we can.
             foreach (EditorBayItem bayItem in editorBayItems.Values)
             {
+                //Ignore empty bays.
+                if (string.IsNullOrEmpty(bayItem.vesselName))
+                    continue;
+
                 if (bayItem.workerCount < bayItem.totalIntegrationToAdd)
                 {
                     integrationPoints = bayItem.workerCount;
@@ -2615,6 +2624,9 @@ namespace WildBlueIndustries
 
         protected void updateFlightControlState()
         {
+            if (HighLogic.LoadedSceneIsFlight && FlightGlobals.ActiveVessel == null)
+                return;
+
             if (HighLogic.LoadedSceneIsFlight && partsCanBreak)
             {
                 rcsIsActive = FlightGlobals.ActiveVessel.ActionGroups[KSPActionGroup.RCS];

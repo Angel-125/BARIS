@@ -99,6 +99,9 @@ namespace WildBlueIndustries
 
             //Events
             GameEvents.onEditorShipModified.Remove(onEditorShipModified);
+
+            //Cleanup
+            errorMessageShown = false;
         }
 
         protected void onNewVessel()
@@ -182,13 +185,14 @@ namespace WildBlueIndustries
             }
 
             //If the vessel has been tamepred with then inform the player
+            debugLog("partCountMismatch: " + partCountMismatch);
+            debugLog("errorMessageShown: " + errorMessageShown);
             if (partCountMismatch && !errorMessageShown)
             {
                 //Inform player
                 errorMessageShown = true;
                 messageView.WindowTitle = Localizer.Format(BARISScenario.VesselModifiedTitle);
                 messageView.message = "<Color=yellow><b>" + Localizer.Format(BARISScenario.VesselModifiedMsg) + "</b></color>";
-                messageView.dialogDismissedDelegate = dialogDismissed;
                 messageView.SetVisible(true);
                 BARISScenario.Instance.PlayProblemSound();
             }
@@ -199,11 +203,6 @@ namespace WildBlueIndustries
                 ConfigNode shipNode = ship.SaveShip();
                 shipNode.Save(editorBayItem.vesselFilePath);
             }
-        }
-
-        protected void dialogDismissed()
-        {
-            errorMessageShown = false;
         }
 
         public void launchVessel()
