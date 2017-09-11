@@ -21,6 +21,7 @@ NOTE: ModuleManager is REQUIRED.
 - Fixed vessel modified spam that occurs when you attempt to modify a vessel after it has been integrated.
 - Vessel integration completed dialog no longer shows integration bays that are empty.
 - Edited vehicle integration status messages to improve clarity.
+- Fixed missing title in "Has suffered another component failure" message.
 
 1.3.9.1 PRE-RELEASE
 - Reworked MM patches to exclude command pods, cockpits, and probe cores from part failures. Investigating an alternate means to add them back in as an option.

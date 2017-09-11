@@ -576,7 +576,7 @@ namespace WildBlueIndustries
             {
                 if (this.part.vessel == FlightGlobals.ActiveVessel)
                 {
-                    string message = Localizer.Format(BARISScenario.ComponentFailure);
+                    string message = this.part.partInfo.title + Localizer.Format(BARISScenario.ComponentFailure);
                     BARISScenario.Instance.LogPlayerMessage(message);
                 }
 
