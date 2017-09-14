@@ -380,7 +380,7 @@ namespace WildBlueIndustries
         {
             if (!BARISScenario.partsCanBreak)
             {
-                debugLog("Quality check skipped, parts can't break.");
+                debugLog(this.part.partInfo.title + ": Quality check skipped, parts can't break.");
                 return;
             }
 

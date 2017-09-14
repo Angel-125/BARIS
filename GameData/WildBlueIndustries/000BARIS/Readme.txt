@@ -16,6 +16,17 @@ NOTE: ModuleManager is REQUIRED.
 
 ---REVISION HISTORY---
 
+1.3.9.3 PRE-RELEASE
+- Removed quality checks that happened when a fuel tank was emptied or filled to capacity- it was causing spam upon vehicle load.
+- Timers are now reset when you activate or deactivate BARIS to prevent reliability check spamming when you leave BARIS off in your save for long periods of in-game time.
+- In the options screen, clarified that any part that stores resources, not just fuel tanks, can spring leaks and fail.
+- Add ability to customize the ModuleBreakableFuelTank leak messages.
+- Parts with the Ablator resource now have more appropriate resource leak messages.
+- Added option to allow command pods, cockpits, and probe cores to fail. If unchecked, they will never fail.
+- Added option to allow parts to fail if they have crew capacity. If unchecked, a part with crew capacity will never fail.
+- Command pods, cockpits, and probe cores are no longer excluded from part failures- unless they're not allowed to fail.
+- Experimental: Parts with ElectricCharge can now fail.
+
 1.3.9.2 PRE-RELEASE
 - Removed overall vessel reliability check that was set up during launch; it wasn't doing much except causing people to complain that their launches failed near the end of their flight to orbit.
 - Fixed vessel modified spam that occurs when you attempt to modify a vessel after it has been integrated.

@@ -667,6 +667,10 @@ namespace WildBlueIndustries
             //Load the constant values.
             loadConstants();
 
+            //BARIS enabled state
+            if (node.HasValue("partsCanBreak"))
+                partsCanBreak = bool.Parse(node.GetValue("partsCanBreak"));
+
             //Cached quality results
             if (node.HasNode("EVENTRESULT"))
             {
@@ -795,6 +799,9 @@ namespace WildBlueIndustries
         {
             debugLog("OnSave called");
             base.OnSave(node);
+
+            //BARIS enabled state
+            node.AddValue("partsCanBreak", partsCanBreak);
 
             //Cached quality modifiers
             foreach (BARISEventResult eventResult in cachedQualityModifiers)
@@ -952,6 +959,10 @@ namespace WildBlueIndustries
         protected void onGameSettingsApplied()
         {
             SecondsPerDay = GameSettings.KERBIN_TIME == true ? QualityCheckIntervalKerbin : QualityCheckIntervalEarth;
+            if (BARISSettings.PartsCanBreak != partsCanBreak)
+            {
+                lastUpdateTime = Planetarium.GetUniversalTime();
+            }
             partsCanBreak = BARISSettings.PartsCanBreak;
             showDebug = BARISSettings.DebugMode;
             checksPerDay = BARISSettings.ChecksPerDay;
@@ -1914,6 +1925,8 @@ namespace WildBlueIndustries
         /// <param name="timewarpPenalty">If reliability checks were skipped due to high timewarp, then the checks can incur a penalty. This is the penalty to apply.</param>
         public void PerformReliabilityChecks(int timewarpPenalty = 0)
         {
+            debugLog("PerformReliabilityChecks called");
+
             //Clean the caches
             cleanQualityCaches();
             focusVesselView.flightGlobalIndexes.Clear();

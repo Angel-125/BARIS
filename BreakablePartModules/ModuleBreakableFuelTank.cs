@@ -59,16 +59,6 @@ namespace WildBlueIndustries
                 Debug.Log("[" + this.ClassName + "] - " + message);
         }
 
-        public void Destroy()
-        {
-            GameEvents.onPartResourceNonemptyFull.Remove(onPartResourceNonemptyFull);
-            GameEvents.onPartResourceNonemptyEmpty.Remove(onPartResourceNonemptyEmpty);
-            GameEvents.onPartResourceFlowStateChange.Remove(onFlowStateChanged);
-            qualityControl.onUpdateSettings -= onUpdateSettings;
-            qualityControl.onPartBroken -= OnPartBroken;
-            qualityControl.onPartFixed -= OnPartFixed;
-        }
-
         protected void onUpdateSettings(BaseQualityControl moduleQualityControl)
         {
             Events["CreateSmallLeak"].guiActive = BARISScenario.showDebug;
@@ -157,8 +147,18 @@ namespace WildBlueIndustries
                 BARISScenario.Instance.onTimeTickEvent += leakTimeTick;
 
             GameEvents.onPartResourceFlowStateChange.Add(onFlowStateChanged);
-            GameEvents.onPartResourceNonemptyEmpty.Add(onPartResourceNonemptyEmpty);
-            GameEvents.onPartResourceNonemptyFull.Add(onPartResourceNonemptyFull);
+//            GameEvents.onPartResourceNonemptyEmpty.Add(onPartResourceNonemptyEmpty);
+//            GameEvents.onPartResourceNonemptyFull.Add(onPartResourceNonemptyFull);
+        }
+
+        public void Destroy()
+        {
+//            GameEvents.onPartResourceNonemptyFull.Remove(onPartResourceNonemptyFull);
+//            GameEvents.onPartResourceNonemptyEmpty.Remove(onPartResourceNonemptyEmpty);
+            GameEvents.onPartResourceFlowStateChange.Remove(onFlowStateChanged);
+            qualityControl.onUpdateSettings -= onUpdateSettings;
+            qualityControl.onPartBroken -= OnPartBroken;
+            qualityControl.onPartFixed -= OnPartFixed;
         }
         #endregion
 

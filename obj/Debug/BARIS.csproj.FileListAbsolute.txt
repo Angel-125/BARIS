@@ -20,4 +20,3 @@ C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\UnityEngine.xml
 C:\Projects\KSP\WildBlueIndustries\BARIS\obj\Debug\BARIS.csprojResolveAssemblyReference.cache
 C:\Projects\KSP\WildBlueIndustries\BARIS\obj\Debug\BARIS.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\obj\Debug\BARIS.pdb
-C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\xmldoc2md.xml

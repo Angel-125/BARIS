@@ -270,7 +270,10 @@ namespace WildBlueIndustries
         protected virtual void onThrottleUpDown(bool isThrottleUp)
         {
             if (EngineIsRunning)
+            {
+                debugLog("onThrottleUpDown thinks engine is running. Performing quality check...");
                 qualityControl.PerformQualityCheck();
+            }
         }
 
         public override void OnStart(StartState state)
