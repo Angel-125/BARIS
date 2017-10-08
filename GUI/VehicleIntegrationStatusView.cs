@@ -112,7 +112,7 @@ namespace WildBlueIndustries
             //Build Time
             if (editorBayItem.totalIntegrationToAdd > 0 && editorBayItem.workerCount > 0)
             {
-                int buildTime = editorBayItem.totalIntegrationToAdd / editorBayItem.workerCount;
+                int buildTime = editorBayItem.totalIntegrationToAdd / BARISScenario.Instance.GetWorkerProductivity(editorBayItem.workerCount, editorBayItem.isVAB);
                 if (buildTime > 1)
                     return "<color=white><b>" + Localizer.Format(BARISScenario.BuildTimeLabel) + "</b>" + buildTime + Localizer.Format(BARISScenario.BuildTimeLabelDays) + "</color>";
                 else if (buildTime == 1)

@@ -25,23 +25,23 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 namespace WildBlueIndustries
 {
     /// <summary>
-    /// ModuleBreakableConverter is designed to replace ModuleResourceConverter and interface ModuleQualityControl. When a part is declared broken, it disables the harvester, and when the part is declared fixed,
-    /// it re-enables it again. Almost all of the functionality is internal; all the part config designer needs to do is make sure that ModuleBreakableConverter appears before ModuleQualityControl.
-    /// In addition to the MTBF checks done over time, a quality check occurs whenever the converter is started or stopped. It is part of the BARISBridge plugin.
+    /// ModuleBreakableAsteroidDrill is designed to replace ModuleAsteroidDrill and interface ModuleQualityControl. When a part is declared broken, it disables the drill, and when the part is declared fixed,
+    /// it re-enables it again. Almost all of the functionality is internal; all the part config designer needs to do is make sure that ModuleBreakableAsteroidDrill appears before ModuleQualityControl.
+    /// In addition to the MTBF checks done over time, a quality check occurs whenever the drill is started or stopped. It is part of the BARISBridge plugin.
     /// </summary>
-    public class ModuleBreakableConverter : ModuleResourceConverter, ICanBreak
+    public class ModuleBreakableAsteroidDrill : ModuleAsteroidDrill, ICanBreak
     {
-        /// <summary>
-        /// What skill to use when performing the quality check. This is not always the same skill required to repair or maintain the part.
-        /// </summary>
-        [KSPField()]
-        public string qualityCheckSkill = "RepairSkill";
-
         /// <summary>
         /// Flag to indicate that the part module is broken. If broken, then it can't be declared broken again by the ModuleQualityControl.
         /// </summary>
         [KSPField(isPersistant = true)]
         public bool isBroken;
+
+        /// <summary>
+        /// What skill to use when performing the quality check. This is not always the same skill required to repair or maintain the part.
+        /// </summary>
+        [KSPField()]
+        public string qualityCheckSkill = "RepairSkill";
 
         protected BaseQualityControl qualityControl;
 
@@ -52,9 +52,9 @@ namespace WildBlueIndustries
         }
 
         /// <summary>
-        /// This method will start the converter. When starting, it will make a quality check. Use this method in place of StartResourceConverter.
+        /// This method will start the asteroid drill. When starting, it will make a quality check. Use this method in place of StartResourceConverter.
         /// </summary>
-        [KSPEvent(guiActive = true, guiActiveUnfocused = true, unfocusedRange = 5.0f, guiName = "Start Converter")]
+        [KSPEvent(guiActive = true, guiActiveUnfocused = true, unfocusedRange = 5.0f, guiName = "Start Drill")]
         public virtual void StartConverter()
         {
             //If the drill is broken, then don't start the converter.
@@ -62,31 +62,21 @@ namespace WildBlueIndustries
             {
                 if (this.part.vessel == FlightGlobals.ActiveVessel)
                 {
-                    string message = this.part.partInfo.title + BARISBridge.PartBrokenCannotStart;
-                    BARISBridge.LogPlayerMessage(message);
+                    BARISBridge.LogPlayerMessage(this.part.partInfo.title + BARISBridge.PartBrokenCannotStart);
                 }
                 StopResourceConverter();
                 return;
             }
 
             //Update events
-            Events["StartConverter"].active = false;
-            Events["StopConverter"].active = true;
+            Events["StartConverter"].guiActive = false;
+            Events["StartConverter"].guiActiveUnfocused = false;
 
             //Start the converter
             StartResourceConverter();
             qualityControl.UpdateActivationState();
-            if (BARISBridge.ConvertersCanFail)
+            if (BARISBridge.DrillsCanFail)
                 qualityControl.PerformQualityCheck();
-        }
-
-        [KSPEvent(guiName = "Stop Converter", guiActive = true)]
-        public virtual void StopConverter()
-        {
-            Events["StartConverter"].active = true;
-            Events["StopConverter"].active = false;
-            StopResourceConverter();
-            qualityControl.UpdateActivationState();
         }
 
         [KSPAction()]
@@ -95,62 +85,22 @@ namespace WildBlueIndustries
             StartConverter();
         }
 
-        [KSPAction()]
-        public void StopConverterAction(KSPActionParam param)
-        {
-            StopConverter();
-        }
-
-        public virtual void SetGuiVisible(bool isVisible)
-        {
-            if (isVisible)
-            {
-                if (ModuleIsActive())
-                {
-                    Events["StartConverter"].active = false;
-                    Events["StopConverter"].active = true;
-                }
-
-                else
-                {
-                    Events["StartConverter"].active = true;
-                    Events["StopConverter"].active = false;
-                }
-            }
-
-            else
-            {
-                Events["StartConverter"].active = false;
-                Events["StopConverter"].active = false;
-            }
-        }
-
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
 
             //Setup the events
             Events["StartConverter"].guiName = "Start " + ConverterName;
-            Events["StopConverter"].guiName = "Stop " + ConverterName;
             Events["StartResourceConverter"].active = false;
-            Events["StopResourceConverter"].active = false;
             if (IsActivated)
             {
-                Events["StartConverter"].active = false;
-                Events["StopConverter"].active = true;
-            }
-
-            else
-            {
-                Events["StartConverter"].active = true;
-                Events["StopConverter"].active = false;
+                Events["StartConverter"].guiActive = false;
+                Events["StartConverter"].guiActiveUnfocused = false;
             }
 
             //Setup actions
             Actions["StartResourceConverterAction"].active = false;
             Actions["StartConverterAction"].guiName = StartActionName;
-            Actions["StopResourceConverterAction"].active = false;
-            Actions["StopConverterAction"].guiName = StartActionName;
         }
 
         public virtual void Destroy()
@@ -162,7 +112,7 @@ namespace WildBlueIndustries
 
         protected void onUpdateSettings(BaseQualityControl moduleQualityControl)
         {
-            if (!BARISBridge.ConvertersCanFail)
+            if (!BARISBridge.DrillsCanFail)
                 isBroken = false;
         }
 
@@ -174,7 +124,12 @@ namespace WildBlueIndustries
 
         public bool ModuleIsActivated()
         {
-            if (!BARISBridge.PartsCanBreak || !BARISBridge.ConvertersCanFail)
+            if (!BARISBridge.CrewedPartsCanFail && this.part.CrewCapacity > 0)
+                return false;
+            if (!BARISBridge.CommandPodsCanFail && this.part.FindModuleImplementing<ModuleCommand>() != null)
+                return false;
+
+            if (!BARISBridge.PartsCanBreak || !BARISBridge.DrillsCanFail)
                 return false;
 
             return IsActivated;
@@ -182,6 +137,7 @@ namespace WildBlueIndustries
 
         public void SubscribeToEvents(BaseQualityControl moduleQualityControl)
         {
+            debugLog("SubscribeToEvents");
             qualityControl = moduleQualityControl;
             qualityControl.onPartBroken += OnPartBroken;
             qualityControl.onPartFixed += OnPartFixed;
@@ -199,18 +155,15 @@ namespace WildBlueIndustries
 
         public virtual void OnPartBroken(BaseQualityControl moduleQualityControl)
         {
-            if (!BARISBridge.ConvertersCanFail)
-                return;
-
             isBroken = true;
             StopResourceConverter();
 
             if (this.part.vessel == FlightGlobals.ActiveVessel)
             {
-                string message = Localizer.Format(this.part.partInfo.title + BARISBridge.ConverterBroken);
+                string message = Localizer.Format(this.part.partInfo.title + BARISBridge.DrillBroken);
                 BARISBridge.LogPlayerMessage(message);
             }
-            qualityControl.UpdateQualityDisplay(qualityControl.qualityDisplay + Localizer.Format(BARISBridge.ConverterLabel));
+            qualityControl.UpdateQualityDisplay(qualityControl.qualityDisplay + Localizer.Format(BARISBridge.DrillLabel));
         }
         #endregion
 
@@ -220,21 +173,15 @@ namespace WildBlueIndustries
 
             //Always hide the start resource converter button
             Events["StartResourceConverter"].active = false;
-            Events["StopResourceConverter"].active = false;
 
             //Only need to do the stuff below if we're in flight.
             if (HighLogic.LoadedSceneIsFlight == false)
                 return;
 
-            if (!IsActivated)
+            if (!IsActivated && Events["StartConverter"].guiActive == false)
             {
-                Events["StartConverter"].active = true;
-                Events["StopConverter"].active = false;
-            }
-            else if (IsActivated)
-            {
-                Events["StartConverter"].active = false;
-                Events["StopConverter"].active = true;
+                Events["StartConverter"].guiActive = true;
+                Events["StartConverter"].guiActiveUnfocused = true;
             }
         }
 
@@ -254,6 +201,5 @@ namespace WildBlueIndustries
                 Events["StartConverter"].active = false;
             }
         }
-
     }
 }

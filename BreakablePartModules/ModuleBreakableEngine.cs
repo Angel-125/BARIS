@@ -83,6 +83,9 @@ namespace WildBlueIndustries
         [KSPEvent(guiName = "Generate Failure Mode")]
         public void GenerateFailureMode()
         {
+            if (failureMode != BARRISEngineFailureModes.None)
+                return;
+
             //There are three possible engine failures: shutdown, stuck on, explode.
             int resultRoll = UnityEngine.Random.Range(1, 100);
 
@@ -270,7 +273,10 @@ namespace WildBlueIndustries
         protected virtual void onThrottleUpDown(bool isThrottleUp)
         {
             if (EngineIsRunning)
+            {
+                debugLog("onThrottleUpDown thinks engine is running. Performing quality check...");
                 qualityControl.PerformQualityCheck();
+            }
         }
 
         public override void OnStart(StartState state)
@@ -322,6 +328,11 @@ namespace WildBlueIndustries
 
         public bool ModuleIsActivated()
         {
+            if (!BARISBreakableParts.CrewedPartsCanFail && this.part.CrewCapacity > 0)
+                return false;
+            if (!BARISBreakableParts.CommandPodsCanFail && this.part.FindModuleImplementing<ModuleCommand>() != null)
+                return false;
+
             if (!BARISBreakableParts.EnginesCanFail)
                 return false;
 

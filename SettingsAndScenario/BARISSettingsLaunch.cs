@@ -33,7 +33,7 @@ namespace WildBlueIndustries
         public int multiplierPerExpBonus = 3;
 
         [GameParameters.CustomIntParameterUI("% chance fails gain experience", maxValue = 100, minValue = 1, stepSize = 1, toolTip = "How likely a part will gain flight experience when staging fails.", autoPersistance = true)]
-        public int stagingFailExpChance = 10;
+        public int stagingFailExpChance = 40;
 
         [GameParameters.CustomParameterUI("Workers cost money", toolTip = "Workers cost money to employ.", autoPersistance = true)]
         public bool workersCostFunds = true;

@@ -224,6 +224,7 @@ namespace WildBlueIndustries
             totalIntegrationToAdd = 0;
             totalQuality = 0;
             totalVesselParts = 0;
+            vesselThumbnail = null;
 
             //With KAC installed, clear the alarm.
             if (KACWrapper.AssemblyExists && KACWrapper.APIReady)

@@ -34,6 +34,8 @@ namespace WildBlueIndustries
         public void OnGUI()
         {
             int totalWindows = managedWindows.Count;
+            if (totalWindows == 0)
+                return;
             IManagedWindow managedWindow;
 
             for (int index = 0; index < totalWindows; index++)

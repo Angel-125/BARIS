@@ -125,6 +125,11 @@ namespace WildBlueIndustries
 
         public bool ModuleIsActivated()
         {
+            if (!BARISBridge.CrewedPartsCanFail && this.part.CrewCapacity > 0)
+                return false;
+            if (!BARISBridge.CommandPodsCanFail && this.part.FindModuleImplementing<ModuleCommand>() != null)
+                return false;
+
             if (!BARISBridge.PartsCanBreak || !BARISBridge.DrillsCanFail)
                 return false;
 

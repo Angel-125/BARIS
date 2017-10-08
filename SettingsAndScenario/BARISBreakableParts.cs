@@ -20,37 +20,73 @@ namespace WildBlueIndustries
 {
     public class BARISBreakableParts : GameParameters.CustomParameterNode
     {
-        [GameParameters.CustomParameterUI("Converters can fail", toolTip = "Resource converters can break", autoPersistance = true)]
+        [GameParameters.CustomParameterUI("Should commandable parts fail?", toolTip = "If unchecked, command pods, cockpits, and probe cores will never fail.", autoPersistance = true)]
+        public bool commandPodsCanFail = true;
+
+        [GameParameters.CustomParameterUI("Should parts with crew capacity fail?", toolTip = "If unchecked, a part with crew capacity will never fail.", autoPersistance = true)]
+        public bool crewedPartsCanFail = true;
+
+        [GameParameters.CustomParameterUI("Should converters fail?", toolTip = "Resource converters can break.", autoPersistance = true)]
         public bool convertersCanFail = true;
 
-        [GameParameters.CustomParameterUI("Drills can fail", toolTip = "Drills can break", autoPersistance = true)]
+        [GameParameters.CustomParameterUI("Should drills fail?", toolTip = "Drills can brea.k", autoPersistance = true)]
         public bool drillsCanFail = true;
 
-        [GameParameters.CustomParameterUI("Engines can fail", toolTip = "Engines can breakdown", autoPersistance = true)]
+        [GameParameters.CustomParameterUI("Should engines fail?", toolTip = "Engines can breakdown.", autoPersistance = true)]
         public bool enginesCanFail = true;
 
-        [GameParameters.CustomParameterUI("Fuel tanks can fail", toolTip = "Fuel tanks can spring leaks", autoPersistance = true)]
+        [GameParameters.CustomParameterUI("Should parts that hold resources fail?", toolTip = "Any part that stores resources can spring leaks.", autoPersistance = true)]
         public bool tanksCanFail = true;
 
-        [GameParameters.CustomParameterUI("SAS can fail", toolTip = "Gyros can breakdown.", autoPersistance = true)]
+        [GameParameters.CustomParameterUI("Should SAS and gyros fail?", toolTip = "Gyros can breakdown.", autoPersistance = true)]
         public bool sasCanFail = true;
 
-        [GameParameters.CustomParameterUI("RCS can fail", toolTip = "RCS rockets can break", autoPersistance = true)]
+        [GameParameters.CustomParameterUI("Should RCS fail?", toolTip = "RCS rockets can break.", autoPersistance = true)]
         public bool rcsCanFail = true;
 
-        [GameParameters.CustomParameterUI("Transmitters can fail", toolTip = "Transmitters can stop transmitting", autoPersistance = true)]
+        [GameParameters.CustomParameterUI("Should transmitters fail?", toolTip = "Transmitters can stop transmitting.", autoPersistance = true)]
         public bool transmittersCanFail = true;
 
-        [GameParameters.CustomParameterUI("Failed parts can explode", toolTip = "Failed parts can explode during launches or during post-launch critical failures.", autoPersistance = true)]
+        [GameParameters.CustomParameterUI("Can failed parts explode?", toolTip = "Failed parts can explode during launches or during post-launch critical failures.", autoPersistance = true)]
         public bool failuresCanExplode = false;
 
-        [GameParameters.CustomIntParameterUI("Explosive potential (staging) %", maxValue = 100, minValue = 0, stepSize = 1, toolTip = "How likely will a staging failure cause an explosion", autoPersistance = true)]
+        [GameParameters.CustomIntParameterUI("Explosive potential (staging) %", maxValue = 100, minValue = 0, stepSize = 1, toolTip = "How likely will a staging failure cause an explosion.", autoPersistance = true)]
         public int explosivePotentialLaunches = 15;
 
         [GameParameters.CustomIntParameterUI("Explosive potential (critical fails) %", maxValue = 100, minValue = 0, stepSize = 1, toolTip = "How likely will a critical failure cause an explosion if the part is out of MTBF.", autoPersistance = true)]
         public int explosivePotentialCritical = 1;
 
         #region Properties
+        public static bool CommandPodsCanFail
+        {
+            get
+            {
+                BARISBreakableParts settings = HighLogic.CurrentGame.Parameters.CustomParams<BARISBreakableParts>();
+                return settings.commandPodsCanFail;
+            }
+
+            set
+            {
+                BARISBreakableParts settings = HighLogic.CurrentGame.Parameters.CustomParams<BARISBreakableParts>();
+                settings.commandPodsCanFail = value;
+            }
+        }
+
+        public static bool CrewedPartsCanFail
+        {
+            get
+            {
+                BARISBreakableParts settings = HighLogic.CurrentGame.Parameters.CustomParams<BARISBreakableParts>();
+                return settings.crewedPartsCanFail;
+            }
+
+            set
+            {
+                BARISBreakableParts settings = HighLogic.CurrentGame.Parameters.CustomParams<BARISBreakableParts>();
+                settings.crewedPartsCanFail = value;
+            }
+        }
+
         public static int ExplosivePotentialCritical
         {
             get

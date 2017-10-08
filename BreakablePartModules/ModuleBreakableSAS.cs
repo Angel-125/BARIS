@@ -97,6 +97,11 @@ namespace WildBlueIndustries
 
         public bool ModuleIsActivated()
         {
+            if (!BARISBreakableParts.CrewedPartsCanFail && this.part.CrewCapacity > 0)
+                return false;
+            if (!BARISBreakableParts.CommandPodsCanFail && this.part.FindModuleImplementing<ModuleCommand>() != null)
+                return false;
+
             if (!BARISBreakableParts.SASCanFail)
                 return false;
 

@@ -335,23 +335,4 @@ namespace WildBlueIndustries
 
         #endregion
     }
-
-
-    [KSPAddon(KSPAddon.Startup.EveryScene, false)]
-    public class BARISSettingsMonitor : MonoBehaviour
-    {
-        public void Awake()
-        {
-            GameEvents.OnGameSettingsApplied.Add(UpdateSettings);
-        }
-
-        public void Destroy()
-        {
-            GameEvents.OnGameSettingsApplied.Remove(UpdateSettings);
-        }
-
-        public void UpdateSettings()
-        {
-        }
-    }
 }

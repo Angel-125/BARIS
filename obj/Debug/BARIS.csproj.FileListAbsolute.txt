@@ -1,8 +1,8 @@
 C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\MarkdownSeparator.exe
-C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\RunPowershell.bat
-C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\xmldoc2md.ps1
 C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\xmldoc2md.xsl
 C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\RunMDSeparator.bat
+C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\RunPowershell.bat
+C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\xmldoc2md.ps1
 C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\BARIS.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\BARIS.pdb
 C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\Assembly-CSharp-firstpass.dll
@@ -11,13 +11,12 @@ C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\BARISBridge.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\KSPAssets.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\UnityEngine.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\UnityEngine.UI.dll
-C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\TrackIRUnity.dll
+C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\KSPTrackIR.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\Mono.Cecil.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\TDx.TDxInput.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\Mono.Security.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\BARISBridge.pdb
 C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\UnityEngine.xml
-C:\Projects\KSP\WildBlueIndustries\BARIS\obj\Debug\BARIS.csprojResolveAssemblyReference.cache
 C:\Projects\KSP\WildBlueIndustries\BARIS\obj\Debug\BARIS.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\obj\Debug\BARIS.pdb
-C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\xmldoc2md.xml
+C:\Projects\KSP\WildBlueIndustries\BARIS\obj\Debug\BARIS.csprojResolveAssemblyReference.cache

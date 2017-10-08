@@ -72,6 +72,8 @@ namespace WildBlueIndustries
         {
             int availableWorkers = BARISScenario.Instance.GetAvailableWorkers(true);
             int maxAvailableWorkers = BARISScenario.Instance.GetMaxAvailableWorkers(true);
+            debugLog("availableWorkers: " + availableWorkers);
+            debugLog("maxAvailableWorkers: " + maxAvailableWorkers);
 
             //Available workers also needs to account for workers currently working.
             int workersWorking = BARISScenario.Instance.GetWorkersWorking(true);

@@ -96,9 +96,6 @@
     <Compile Include="Utilities\BARISUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QualityModules\ModuleQualityControl.cs" />
-    <Compile Include="Utilities\Dialog.cs" />
-    <Compile Include="Utilities\DialogManager.cs" />
-    <Compile Include="Utilities\DialogUils.cs" />
     <Compile Include="GUI\VesselsCompletedView.cs" />
     <Compile Include="Utilities\KACWrapper.cs" />
     <Compile Include="GUI\VehicleIntegrationStatusView.cs" />

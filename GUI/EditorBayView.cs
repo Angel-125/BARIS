@@ -210,6 +210,7 @@ namespace WildBlueIndustries
                     if (File.Exists(editorBayItem.vesselFilePath))
                         File.Delete(editorBayItem.vesselFilePath);
                     shipNode.Save(editorBayItem.vesselFilePath);
+                    editorBayItem.vesselThumbnail = null;
 
                     float dryCost, fuelCost;
                     ship.GetShipCosts(out dryCost, out fuelCost);

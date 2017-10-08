@@ -40,6 +40,15 @@ namespace WildBlueIndustries
         ModuleQualityControl qualityControl;
         bool ignoreFlowStateChanges = false;
 
+        [KSPField()]
+        public string smallLeakMessage;
+
+        [KSPField()]
+        public string mediumLeakMessage;
+
+        [KSPField()]
+        public string largeLeakMessage;
+
         /// <summary>
         /// What skill to use when performing the quality check. This is not always the same skill required to repair or maintain the part.
         /// </summary>
@@ -59,16 +68,6 @@ namespace WildBlueIndustries
                 Debug.Log("[" + this.ClassName + "] - " + message);
         }
 
-        public void Destroy()
-        {
-            GameEvents.onPartResourceNonemptyFull.Remove(onPartResourceNonemptyFull);
-            GameEvents.onPartResourceNonemptyEmpty.Remove(onPartResourceNonemptyEmpty);
-            GameEvents.onPartResourceFlowStateChange.Remove(onFlowStateChanged);
-            qualityControl.onUpdateSettings -= onUpdateSettings;
-            qualityControl.onPartBroken -= OnPartBroken;
-            qualityControl.onPartFixed -= OnPartFixed;
-        }
-
         protected void onUpdateSettings(BaseQualityControl moduleQualityControl)
         {
             Events["CreateSmallLeak"].guiActive = BARISScenario.showDebug;
@@ -84,6 +83,11 @@ namespace WildBlueIndustries
 
         public bool ModuleIsActivated()
         {
+            if (!BARISBreakableParts.CrewedPartsCanFail && this.part.CrewCapacity > 0)
+                return false;
+            if (!BARISBreakableParts.CommandPodsCanFail && this.part.FindModuleImplementing<ModuleCommand>() != null)
+                return false;
+
             if (!BARISSettings.PartsCanBreak || !BARISBreakableParts.TanksCanFail)
                 return false;
 
@@ -157,8 +161,18 @@ namespace WildBlueIndustries
                 BARISScenario.Instance.onTimeTickEvent += leakTimeTick;
 
             GameEvents.onPartResourceFlowStateChange.Add(onFlowStateChanged);
-            GameEvents.onPartResourceNonemptyEmpty.Add(onPartResourceNonemptyEmpty);
-            GameEvents.onPartResourceNonemptyFull.Add(onPartResourceNonemptyFull);
+//            GameEvents.onPartResourceNonemptyEmpty.Add(onPartResourceNonemptyEmpty);
+//            GameEvents.onPartResourceNonemptyFull.Add(onPartResourceNonemptyFull);
+        }
+
+        public void Destroy()
+        {
+//            GameEvents.onPartResourceNonemptyFull.Remove(onPartResourceNonemptyFull);
+//            GameEvents.onPartResourceNonemptyEmpty.Remove(onPartResourceNonemptyEmpty);
+            GameEvents.onPartResourceFlowStateChange.Remove(onFlowStateChanged);
+            qualityControl.onUpdateSettings -= onUpdateSettings;
+            qualityControl.onPartBroken -= OnPartBroken;
+            qualityControl.onPartFixed -= OnPartFixed;
         }
         #endregion
 
@@ -195,6 +209,8 @@ namespace WildBlueIndustries
             if (this.part.vessel == FlightGlobals.ActiveVessel)
             {
                 string message = Localizer.Format(this.part.partInfo.title + BARISScenario.SmallLeak);
+                if (!string.IsNullOrEmpty(smallLeakMessage))
+                    message = Localizer.Format(this.part.partInfo.title + smallLeakMessage);
                 BARISScenario.Instance.LogPlayerMessage(message);
             }
             leakedUnitsPerSec += smallLeakRate;
@@ -210,6 +226,8 @@ namespace WildBlueIndustries
             if (this.part.vessel == FlightGlobals.ActiveVessel)
             {
                 string message = Localizer.Format(this.part.partInfo.title + BARISScenario.MediumLeak);
+                if (!string.IsNullOrEmpty(mediumLeakMessage))
+                    message = Localizer.Format(this.part.partInfo.title + mediumLeakMessage);
                 BARISScenario.Instance.LogPlayerMessage(message);
             }
             leakedUnitsPerSec += mediumLeakRate;
@@ -225,6 +243,8 @@ namespace WildBlueIndustries
             if (this.part.vessel == FlightGlobals.ActiveVessel)
             {
                 string message = Localizer.Format(this.part.partInfo.title + BARISScenario.LargeLeak);
+                if (!string.IsNullOrEmpty(largeLeakMessage))
+                    message = Localizer.Format(this.part.partInfo.title + largeLeakMessage);
                 BARISScenario.Instance.LogPlayerMessage(message);
             }
             leakedUnitsPerSec += largeLeakRate;

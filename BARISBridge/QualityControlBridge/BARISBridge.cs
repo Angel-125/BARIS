@@ -63,6 +63,7 @@ namespace WildBlueIndustries
         public static string MsgToEffectRepairs = " to effect repairs.";
         public static string MsgBodyBroken1 = " has failed! It will cost ";
         public static string MsgBodyBroken2 = " to repair.";
+        public static string MsgBodyBroken3 = " has failed!";
 
         public static float MessageDuration = 8.0f;
         public static bool showDebug;
@@ -71,6 +72,8 @@ namespace WildBlueIndustries
         public static bool DrillsCanFail;
         public static bool RepairsRequireResources;
         public static bool RepairsRequireEVA;
+        public static bool CrewedPartsCanFail;
+        public static bool CommandPodsCanFail;
 
         public PlayModeUpdateDelegate playModeUpdate;
 

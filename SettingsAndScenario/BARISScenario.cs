@@ -135,7 +135,7 @@ namespace WildBlueIndustries
         /// <summary>
         /// Maximum number of workers allowed per VAB/SPH. This assumes that the facility has been fully upgraded.
         /// </summary>
-        public static int MaxWorkersPerFacility = 100;
+        public static int MaxWorkersPerFacility = 200;
 
         /// <summary>
         /// Minimum number of workers allowed per VAB/SPH. This assumes that the facility hasn't been upgraded.
@@ -156,6 +156,16 @@ namespace WildBlueIndustries
         /// The cost in funds per astronaut. It is payed every DaysPerPayroll.
         /// </summary>
         public static int PayrollPerAstronaut = 250;
+
+        /// <summary>
+        /// How many points of integration per worker
+        /// </summary>
+        public static int IntegrationPerWorker = 1;
+
+        /// <summary>
+        /// Integration point multiplier afforded by facility level. Assumes max facility level
+        /// </summary>
+        public static float FacilityIntegrationMultiplier = 1.25f;
 
         /// <summary>
         /// A collection of EditorBayItem objects, which represent the integration progress of a particular vessel awaiting launch.
@@ -667,6 +677,10 @@ namespace WildBlueIndustries
             //Load the constant values.
             loadConstants();
 
+            //BARIS enabled state
+            if (node.HasValue("partsCanBreak"))
+                partsCanBreak = bool.Parse(node.GetValue("partsCanBreak"));
+
             //Cached quality results
             if (node.HasNode("EVENTRESULT"))
             {
@@ -795,6 +809,9 @@ namespace WildBlueIndustries
         {
             debugLog("OnSave called");
             base.OnSave(node);
+
+            //BARIS enabled state
+            node.AddValue("partsCanBreak", partsCanBreak);
 
             //Cached quality modifiers
             foreach (BARISEventResult eventResult in cachedQualityModifiers)
@@ -952,6 +969,10 @@ namespace WildBlueIndustries
         protected void onGameSettingsApplied()
         {
             SecondsPerDay = GameSettings.KERBIN_TIME == true ? QualityCheckIntervalKerbin : QualityCheckIntervalEarth;
+            if (BARISSettings.PartsCanBreak != partsCanBreak)
+            {
+                lastUpdateTime = Planetarium.GetUniversalTime();
+            }
             partsCanBreak = BARISSettings.PartsCanBreak;
             showDebug = BARISSettings.DebugMode;
             checksPerDay = BARISSettings.ChecksPerDay;
@@ -965,6 +986,8 @@ namespace WildBlueIndustries
             BARISBridge.DrillsCanFail = BARISBreakableParts.DrillsCanFail;
             BARISBridge.RepairsRequireResources = BARISSettings.RepairsRequireResources;
             BARISBridge.RepairsRequireEVA = BARISSettings.RepairsRequireEVA;
+            BARISBridge.CrewedPartsCanFail = BARISBreakableParts.CrewedPartsCanFail;
+            BARISBridge.CommandPodsCanFail = BARISBreakableParts.CommandPodsCanFail;
         }
 
         protected void onCrewBoardVessel(GameEvents.FromToAction<Part, Part> data)
@@ -1121,6 +1144,39 @@ namespace WildBlueIndustries
         }
 
         /// <summary>
+        /// Determines the number of integration points based upon worker count and VAB/SPH
+        /// </summary>
+        /// <param name="workerCount">Number of workers</param>
+        /// <param name="isVAB">true if the workers are working in the VAB</param>
+        /// <returns>Int with the number of integration points.</returns>
+        public int GetWorkerProductivity(int workerCount, bool isVAB)
+        {
+            int integrationPoints = 0;
+            float sphLevel = ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.SpaceplaneHangar);
+            float vabLevel = ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.VehicleAssemblyBuilding);
+
+            //Get base level of integration
+            integrationPoints = workerCount * IntegrationPerWorker;
+
+            //Add facility bonus
+            if (isVAB)
+                integrationPoints += Mathf.RoundToInt(integrationPoints * vabLevel * FacilityIntegrationMultiplier);
+            else
+                integrationPoints += Mathf.RoundToInt(integrationPoints * sphLevel * FacilityIntegrationMultiplier);
+
+            //In career mode, reputation matters.
+            if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
+            {
+                if (Reputation.CurrentRep > 0)
+                    integrationPoints *= Mathf.RoundToInt(1 + (Reputation.CurrentRep / Reputation.RepRange));
+                else
+                    integrationPoints = Mathf.RoundToInt(integrationPoints * Mathf.Abs(Reputation.CurrentRep / Reputation.RepRange));
+            }
+
+            return integrationPoints;
+        }
+
+        /// <summary>
         /// Loops through all the editor bays and updates their base quality values by the number of workers
         /// performing the vehicle integration.
         /// </summary>
@@ -1147,10 +1203,13 @@ namespace WildBlueIndustries
                 if (string.IsNullOrEmpty(bayItem.vesselName))
                     continue;
 
-                if (bayItem.workerCount < bayItem.totalIntegrationToAdd)
-                {
-                    integrationPoints = bayItem.workerCount;
+                //Calculate integration points
+                integrationPoints = GetWorkerProductivity(bayItem.workerCount, bayItem.isVAB);
+                if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
+                    integrationPoints *= Mathf.RoundToInt(Reputation.CurrentRep / Reputation.RepRange);
 
+                if (integrationPoints < bayItem.totalIntegrationToAdd)
+                {
                     bayItem.totalIntegrationAdded += integrationPoints;
                     bayItem.totalIntegrationToAdd -= integrationPoints;
                 }
@@ -1914,6 +1973,8 @@ namespace WildBlueIndustries
         /// <param name="timewarpPenalty">If reliability checks were skipped due to high timewarp, then the checks can incur a penalty. This is the penalty to apply.</param>
         public void PerformReliabilityChecks(int timewarpPenalty = 0)
         {
+            debugLog("PerformReliabilityChecks called");
+
             //Clean the caches
             cleanQualityCaches();
             focusVesselView.flightGlobalIndexes.Clear();
@@ -3075,6 +3136,9 @@ namespace WildBlueIndustries
 
             if (node.HasValue("PayrollPerAstronaut"))
                 PayrollPerAstronaut = int.Parse(node.GetValue("PayrollPerAstronaut"));
+
+            if (node.HasValue("IntegrationPerWorker"))
+                IntegrationPerWorker = int.Parse(node.GetValue("IntegrationPerWorker"));
             #endregion
 
             #region Launch Failures

@@ -380,7 +380,7 @@ namespace WildBlueIndustries
         {
             if (!BARISScenario.partsCanBreak)
             {
-                debugLog("Quality check skipped, parts can't break.");
+                debugLog(this.part.partInfo.title + ": Quality check skipped, parts can't break.");
                 return;
             }
 
@@ -429,7 +429,12 @@ namespace WildBlueIndustries
             //Provide an on screen message too
             if (this.part.vessel == FlightGlobals.ActiveVessel)
             {
-                string message = BARISBridge.MsgBodyA + this.part.partInfo.title + BARISBridge.MsgBodyBroken1 + GetRepairCost() + BARISBridge.MsgBodyBroken2;
+                string message;
+
+                if (BARISSettings.RepairsRequireResources)
+                    message = BARISBridge.MsgBodyA + this.part.partInfo.title + BARISBridge.MsgBodyBroken1 + GetRepairCost() + BARISBridge.MsgBodyBroken2;
+                else
+                    message = BARISBridge.MsgBodyA + this.part.partInfo.title + BARISBridge.MsgBodyBroken3;
                 BARISScenario.Instance.LogPlayerMessage(message);
             }
 
@@ -437,12 +442,12 @@ namespace WildBlueIndustries
             SetupBrokenHighlighting();
 
             //If we only have one breakable part module then fire the part broken event.
-            if (breakableParts.Count == 1)
-                FireOnPartBroken();
+//            if (breakableParts.Count == 1)
+//                FireOnPartBroken();
 
             //We have more than one breakable part, such as Brumby's RCS and transmitter.
             //Randomly select one to fail.
-            else if (breakableModuleCount > 0)
+            if (breakableModuleCount > 0)
             {
                 List<ICanBreak> breakables = new List<ICanBreak>();
 
@@ -574,12 +579,6 @@ namespace WildBlueIndustries
             //select another one at random to fail.
             if (breakableParts.Count > 1 && breakableModuleCount > 0)
             {
-                if (this.part.vessel == FlightGlobals.ActiveVessel)
-                {
-                    string message = this.part.partInfo.title + Localizer.Format(BARISScenario.ComponentFailure);
-                    BARISScenario.Instance.LogPlayerMessage(message);
-                }
-
                 //Tell one of the ICanBreak modules that it's broken.
                 List<ICanBreak> breakables = new List<ICanBreak>();
 
@@ -589,6 +588,12 @@ namespace WildBlueIndustries
                         breakables.Add(breakablePart);
                 if (breakables.Count == 0)
                     return;
+
+                if (this.part.vessel == FlightGlobals.ActiveVessel)
+                {
+                    string message = this.part.partInfo.title + Localizer.Format(BARISScenario.ComponentFailure);
+                    BARISScenario.Instance.LogPlayerMessage(message);
+                }
 
                 int failedModuleIndex = UnityEngine.Random.Range(0, breakables.Count - 1);
                 breakables[failedModuleIndex].OnPartBroken(this);
