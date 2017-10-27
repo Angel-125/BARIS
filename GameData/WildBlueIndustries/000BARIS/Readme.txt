@@ -16,6 +16,15 @@ NOTE: ModuleManager is REQUIRED.
 
 ---REVISION HISTORY---
 
+1.4.5
+- Flight control state changes ignored when performing an EVA or switching vessels.
+- Fixed crash that happened when installing BARIS into an existing save and switching to an active vessel.
+- Fixed crash that happened in career mode when trying to integrate vessels in the VAB/SPH.
+- Fixed GUI issues in Tracking Station view.
+- Max workers per facility is now calculated based on max workers per bay and max number of bays.
+- Vehicle integration can now be done independently of launch failures.
+- Reduced Test Bench science costs for improving part quality.
+
 1.4
 - Max workers increased to 200.
 - You can adjust worker productivity in the configuration file. See IntegrationPerWorker.

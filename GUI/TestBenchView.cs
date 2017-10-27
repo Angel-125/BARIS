@@ -311,7 +311,7 @@ namespace WildBlueIndustries
             fundsCost *= BARISSettingsLaunch.MultiplierPerExpBonus;
 
             //Get science cost
-            scienceCost = (BARISScenario.MaxFlightsPerQualityBonus - BARISSettingsLaunch.FlightsPerQualityBonus) * qualityControlModules.Length;
+            scienceCost = BARISSettingsLaunch.FlightsPerQualityBonus * qualityControlModules.Length;
 
         }
     }

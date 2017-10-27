@@ -109,8 +109,8 @@ namespace WildBlueIndustries
         public void Awake()
         {
             debugLog("Awake called");
+
             Instance = this;
-//            GameEvents.onLaunch.Add(onLaunch);
             GameEvents.onStageActivate.Add(onStageActivate);
             GameEvents.onStageSeparation.Add(onStageSeparation);
 
@@ -120,25 +120,10 @@ namespace WildBlueIndustries
                 vehicleNotIntegrated = false;
                 ScreenMessages.PostScreenMessage(Localizer.Format(BARISScenario.NotIntegragedMsg), 20.0f, ScreenMessageStyle.UPPER_CENTER);
             }
-
-            //Static fire testing hint
-            if (!BARISScenario.showedStaticFireTooltip && BARISScenario.partsCanBreak)
-            {
-                BARISScenario.showedStaticFireTooltip = true;
-                BARISEventCardView cardView = new BARISEventCardView();
-
-                cardView.WindowTitle = BARISScenario.ToolTipStaticFireTitle;
-                cardView.description = BARISScenario.ToolTipStaticFireMsg;
-                cardView.imagePath = BARISScenario.StaticFireToolTipImagePath;
-
-                cardView.SetVisible(true);
-                GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
-            }
         }
 
         public void Destroy()
         {
-//            GameEvents.onLaunch.Remove(onLaunch);
             GameEvents.onStageActivate.Remove(onStageActivate);
             GameEvents.onStageSeparation.Remove(onStageSeparation);
         }
@@ -494,6 +479,20 @@ namespace WildBlueIndustries
             if (stageCheckInProgress)
                 return;
 
+            //Static fire testing hint
+            if (!BARISScenario.showedStaticFireTooltip && BARISScenario.partsCanBreak)
+            {
+                BARISScenario.showedStaticFireTooltip = true;
+                BARISEventCardView cardView = new BARISEventCardView();
+
+                cardView.WindowTitle = BARISScenario.ToolTipStaticFireTitle;
+                cardView.description = BARISScenario.ToolTipStaticFireMsg;
+                cardView.imagePath = BARISScenario.StaticFireToolTipImagePath;
+
+                cardView.SetVisible(true);
+                GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
+            }
+
             debugLog("onStageActivate: stageID: " + stageID);
             stageCheckInProgress = true;
 
@@ -525,25 +524,6 @@ namespace WildBlueIndustries
             if (report.origin != null)
                 debugLog("Part: " + report.origin.partInfo.title);
 
-        }
-
-        protected void onLaunch(EventReport report)
-        {
-            debugLog("onLaunch called");
-            if (!BARISSettings.PartsCanBreak)
-                return;
-            if (!BARISSettingsLaunch.LaunchesCanFail)
-                return;
-
-            //In addition to checking reliability during staging events, we also check once per launch.
-            //This check is done a random number of minutes after launch, but if the vessel attains orbit
-            //before the timer expires then we're done.
-            launchStartTime = Planetarium.GetUniversalTime();
-            launchCheckSeconds = UnityEngine.Random.Range(MinOrbitFailTime, MaxOrbitFailTime) * 60.0f;
-            debugLog("Launch reliability check in " + launchCheckSeconds + " seconds");
-
-            //Subscribe to the timetick event
-            BARISScenario.Instance.onTimeTickEvent += launchTimeTick;
         }
     }
 }

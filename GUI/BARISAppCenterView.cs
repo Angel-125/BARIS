@@ -217,7 +217,7 @@ namespace WildBlueIndustries
             //Use BARIS construction system if KCT is not installed.
             if (!BARISScenario.isKCTInstalled)
             {
-                if (BARISSettingsLaunch.VesselsNeedIntegration && BARISSettingsLaunch.LaunchesCanFail)
+                if (BARISSettingsLaunch.VesselsNeedIntegration)
                 {
                     //Number of High Bays & Hangar Bays
                     GUILayout.BeginScrollView(originPoint, infoPanelOptions);

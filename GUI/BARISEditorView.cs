@@ -34,6 +34,7 @@ namespace WildBlueIndustries
         private List<EditorBayView> editorBays = new List<EditorBayView>();
         private int maxAvailableWorkers;
         private int maxBays;
+        int maxWorkers;
 
         protected void debugLog(string message)
         {
@@ -62,6 +63,7 @@ namespace WildBlueIndustries
 
             //Current max available workers
             maxAvailableWorkers = BARISScenario.Instance.GetMaxAvailableWorkers(isVAB);
+            maxWorkers = BARISScenario.Instance.GetMaxWorkers(isVAB);
 
             //Current max available editor bays
             //This depends upon facility level.
@@ -116,7 +118,7 @@ namespace WildBlueIndustries
         protected bool canRemoveWorker(int currentWorkers)
         {
             int availableWorkers = BARISScenario.Instance.GetAvailableWorkers(isVAB);
-            if (availableWorkers <= BARISScenario.MaxWorkersPerFacility && currentWorkers > 0)
+            if (availableWorkers <= maxWorkers && currentWorkers > 0)
             {
                 availableWorkers += 1;
                 BARISScenario.Instance.SetAvailableWorkers(availableWorkers, isVAB);

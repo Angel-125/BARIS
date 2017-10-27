@@ -309,8 +309,10 @@ namespace WildBlueIndustries
             //Launch failures
             if (member.Name == "launchesCanFail" || launchesCanFail)
                 return true;
-            else
+            else if (member.Name == "launchesCanFail")
                 return false;
+
+            return true;
         }
         #endregion
     }

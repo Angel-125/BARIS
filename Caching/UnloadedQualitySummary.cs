@@ -58,9 +58,17 @@ namespace WildBlueIndustries
                 qualityModule = qualityModuleSnapshots[index];
 
                 //Get current mtbf, isActivated state, and number of part modules available to break;
+                if (!qualityModule.moduleValues.HasValue("currentMTBF"))
+                    continue;
                 currentMTBF = double.Parse(qualityModule.moduleValues.GetValue("currentMTBF"));
+                if (!qualityModule.moduleValues.HasValue("isActivated"))
+                    continue;
                 isActivated = bool.Parse(qualityModule.moduleValues.GetValue("isActivated"));
+                if (!qualityModule.moduleValues.HasValue("mtbfHibernationFactor"))
+                    continue;
                 mtbfHibernationFactor = float.Parse(qualityModule.moduleValues.GetValue("mtbfHibernationFactor"));
+                if (!qualityModule.moduleValues.HasValue("breakableModuleCount"))
+                    mtbfHibernationFactor = 0.1f;
                 breakableModuleCount = int.Parse(qualityModule.moduleValues.GetValue("breakableModuleCount"));
 
                 if (currentMTBF > 0 && mtbfDecrement > 0)

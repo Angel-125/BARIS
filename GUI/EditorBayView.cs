@@ -155,7 +155,7 @@ namespace WildBlueIndustries
             GUILayout.BeginScrollView(originPoint, infoPanelOptions);
             GUILayout.BeginVertical();
 
-            if (BARISSettingsLaunch.VesselsNeedIntegration && BARISSettingsLaunch.LaunchesCanFail)
+            if (BARISSettingsLaunch.VesselsNeedIntegration)
             {
                 //High Bay/Hangar Bay ID code
                 int highBayID = bayID + 1;

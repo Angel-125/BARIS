@@ -597,6 +597,7 @@ namespace WildBlueIndustries
             GameEvents.onAsteroidSpawned.Add(onAsteroidSpawned);
             GameEvents.onLevelWasLoadedGUIReady.Add(onLevelLoaded);
             GameEvents.onGameSceneSwitchRequested.Add(onWillSwitchGameScene);
+            GameEvents.onVesselChange.Add(onVesselChange);
 
             showDebug = BARISSettings.DebugMode;
             checksPerDay = BARISSettings.ChecksPerDay;
@@ -887,6 +888,7 @@ namespace WildBlueIndustries
             GameEvents.onAsteroidSpawned.Remove(onAsteroidSpawned);
             GameEvents.onLevelWasLoadedGUIReady.Remove(onLevelLoaded);
             GameEvents.onGameSceneSwitchRequested.Remove(onWillSwitchGameScene);
+            GameEvents.onVesselChange.Remove(onVesselChange);
         }
 
         protected void onWillSwitchGameScene(GameEvents.FromToAction<GameScenes, GameScenes> fromToAction)
@@ -990,12 +992,28 @@ namespace WildBlueIndustries
             BARISBridge.CommandPodsCanFail = BARISBreakableParts.CommandPodsCanFail;
         }
 
+        protected void onVesselChange(Vessel vessel)
+        {
+            if (HighLogic.LoadedSceneIsFlight)
+            {
+                rcsIsActive = FlightGlobals.ActiveVessel.ActionGroups[KSPActionGroup.RCS];
+                sasIsActive = FlightGlobals.ActiveVessel.ActionGroups[KSPActionGroup.SAS];
+                rcsWasActive = rcsIsActive;
+                sasWasActive = sasIsActive;
+            }
+        }
+
         protected void onCrewBoardVessel(GameEvents.FromToAction<Part, Part> data)
         {
             //Clear our cached data for highest ranking kerbal by skill
             lastVessel = null;
             highestRankingAstronauts.Clear();
             highestSkills.Clear();
+
+            rcsIsActive = FlightGlobals.ActiveVessel.ActionGroups[KSPActionGroup.RCS];
+            sasIsActive = FlightGlobals.ActiveVessel.ActionGroups[KSPActionGroup.SAS];
+            rcsWasActive = rcsIsActive;
+            sasWasActive = sasIsActive;
         }
 
         protected void onCrewOnEva(GameEvents.FromToAction<Part, Part> data)
@@ -1167,10 +1185,8 @@ namespace WildBlueIndustries
             //In career mode, reputation matters.
             if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
             {
-                if (Reputation.CurrentRep > 0)
-                    integrationPoints *= Mathf.RoundToInt(1 + (Reputation.CurrentRep / Reputation.RepRange));
-                else
-                    integrationPoints = Mathf.RoundToInt(integrationPoints * Mathf.Abs(Reputation.CurrentRep / Reputation.RepRange));
+                if (Reputation.CurrentRep != 0)
+                    integrationPoints = Mathf.RoundToInt((float)integrationPoints * (1.0f + (Reputation.CurrentRep / Reputation.RepRange)));
             }
 
             return integrationPoints;
@@ -1366,6 +1382,14 @@ namespace WildBlueIndustries
             return workers;
         }
 
+        public int GetMaxWorkers(bool isVAB)
+        {
+            if (isVAB)
+                return MaxHighBays * MaxWorkersPerBay;
+            else
+                return MaxHangarBays * MaxWorkersPerBay;
+        }
+
         /// <summary>
         /// Returns the maximum total number of workers allowed for the facility's current upgrade level.
         /// </summary>
@@ -1382,7 +1406,7 @@ namespace WildBlueIndustries
                 facilityLevel = ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.SpaceplaneHangar);
 
             //Set max workers
-            int maxAvailableWorkers = (int)((float)MaxWorkersPerFacility * facilityLevel);
+            int maxAvailableWorkers = (int)((float)GetMaxWorkers(isVAB) * facilityLevel);
             if (maxAvailableWorkers < MinWorkersPerFacility)
                 maxAvailableWorkers = MinWorkersPerFacility;
 
@@ -2685,7 +2709,11 @@ namespace WildBlueIndustries
 
         protected void updateFlightControlState()
         {
-            if (HighLogic.LoadedSceneIsFlight && FlightGlobals.ActiveVessel == null)
+            if (!HighLogic.LoadedSceneIsFlight)
+                return;
+            if (FlightGlobals.ActiveVessel == null)
+                return;
+            if (FlightGlobals.ActiveVessel.isEVA)
                 return;
 
             if (HighLogic.LoadedSceneIsFlight && partsCanBreak)
@@ -3121,9 +3149,6 @@ namespace WildBlueIndustries
 
             if (node.HasValue("MaxWorkersPerBay"))
                 MaxWorkersPerBay = int.Parse(node.GetValue("MaxWorkersPerBay"));
-
-            if (node.HasValue("MaxWorkersPerFacility"))
-                MaxWorkersPerFacility = int.Parse(node.GetValue("MaxWorkersPerFacility"));
 
             if (node.HasValue("MinWorkersPerFacility"))
                 MinWorkersPerFacility = int.Parse(node.GetValue("MinWorkersPerFacility"));
