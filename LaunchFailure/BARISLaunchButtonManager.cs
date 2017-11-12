@@ -218,7 +218,7 @@ namespace WildBlueIndustries
             }
 
             //We're not launching a vessel from an editor bay, so clear the revert list.
-            else if (BARISSettings.PartsCanBreak && BARISSettingsLaunch.LaunchesCanFail)
+            else if (BARISSettings.PartsCanBreak && BARISSettingsLaunch.VesselsNeedIntegration)
             {
                 //Check for vehicle integration
                 ShipConstruct ship = EditorLogic.fetch.ship;

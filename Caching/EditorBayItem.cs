@@ -109,6 +109,16 @@ namespace WildBlueIndustries
         public string KACAlarmID = string.Empty;
 
         /// <summary>
+        /// Game time when the integration was started. Used for KAC integration.
+        /// </summary>
+        public double integrationStartTime = 0;
+
+        /// <summary>
+        /// Flag to indicate whether or not vehicle integration has been completed.
+        /// </summary>
+        public bool isCompleted = false;
+
+        /// <summary>
         /// A list of all the breakable parts in the vessel along with their quality ratings and current flight experience.
         /// </summary>
         public List<PartQualityData> partQualityData = new List<PartQualityData>();
@@ -188,7 +198,6 @@ namespace WildBlueIndustries
                 partQualityData[index] = qualityData;
             }
 
-//            debugLog("Editor Bay " + editorBayID + " totalQuality after update: " + totalQuality);
             debugLog(this.ToString());
         }
 
@@ -228,7 +237,12 @@ namespace WildBlueIndustries
 
             //With KAC installed, clear the alarm.
             if (KACWrapper.AssemblyExists && KACWrapper.APIReady)
+            {
                 KACWrapper.KAC.DeleteAlarm(KACAlarmID);
+                KACAlarmID = string.Empty;
+                integrationStartTime = 0;
+                isCompleted = false;
+            }
 
             //Clear part quality data
             partQualityData.Clear();
@@ -300,6 +314,8 @@ namespace WildBlueIndustries
             node.AddValue("totalVesselParts", totalVesselParts);
             if (!string.IsNullOrEmpty(KACAlarmID))
                 node.AddValue("KACAlarmID", KACAlarmID);
+            node.AddValue("integrationStartTime", integrationStartTime);
+            node.AddValue("isCompleted", isCompleted);
 
             ConfigNode qualityDataNode;
             foreach (PartQualityData qualityData in partQualityData)
@@ -358,6 +374,12 @@ namespace WildBlueIndustries
 
             if (node.HasValue("KACAlarmID"))
                 KACAlarmID = node.GetValue("KACAlarmID");
+
+            if (node.HasValue("integrationStartTime"))
+                integrationStartTime = double.Parse(node.GetValue("integrationStartTime"));
+
+            if (node.HasValue("isCompleted"))
+                isCompleted = bool.Parse(node.GetValue("isCompleted"));
 
             if (node.HasNode("PartQualityData"))
             {

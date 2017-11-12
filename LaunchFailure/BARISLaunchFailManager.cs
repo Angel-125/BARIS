@@ -473,11 +473,20 @@ namespace WildBlueIndustries
         protected void onStageActivate(int stageID)
         {
             if (!BARISSettings.PartsCanBreak)
+            {
+                debugLog("Parts can't break");
                 return;
+            }
             if (!BARISSettingsLaunch.LaunchesCanFail)
+            {
+                debugLog("Launches can't fail");
                 return;
+            }
             if (stageCheckInProgress)
+            {
+                debugLog("Staging check in progress");
                 return;
+            }
 
             //Static fire testing hint
             if (!BARISScenario.showedStaticFireTooltip && BARISScenario.partsCanBreak)
@@ -504,6 +513,7 @@ namespace WildBlueIndustries
 
             //Determine how long to wait until we do a staging reliability check
             stagingCheckSeconds = UnityEngine.Random.Range(1, MaxStagingCheckTime);
+            debugLog("Staging check in " + stagingCheckSeconds + " seconds");
 
             //Subscribe to the timetick event
             BARISScenario.Instance.onTimeTickEvent += stagingTimeTick;

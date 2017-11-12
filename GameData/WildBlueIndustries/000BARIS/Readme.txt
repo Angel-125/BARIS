@@ -16,6 +16,19 @@ NOTE: ModuleManager is REQUIRED.
 
 ---REVISION HISTORY---
 
+1.4.7
+
+KAC Vehicle Integration
+- Vessel integration timer now relies on the KAC alarm, significantly improving accuracy.
+- Vessel integration timer now accurately reflects delays due to work stoppage events.
+- If you delete your integration alarm before vehicle integration is completed, then the corresponding VAB/SPH bay will be cleared as well and its integration efforts lost.
+- The High Bay/Hangar Bay Load button won't be available until vehicle integration has completed.
+- The High Bay/Hangar Bay vessel integration shows the final reliability after vehicle integration.
+NOTE: These improvements only apply to new vessel integration, not existing projects.
+
+Bug Fixes & Enhancements
+- Fixed missing user message during launch failures.
+
 1.4.5
 - Flight control state changes ignored when performing an EVA or switching vessels.
 - Fixed crash that happened when installing BARIS into an existing save and switching to an active vessel.

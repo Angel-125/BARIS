@@ -239,7 +239,7 @@ namespace WildBlueIndustries
                     }
 
                     //Generate a KAC alarm (if KAC is installed)
-                    setKACAlarm(editorBayItem);
+                    BARISScenario.Instance.SetKACAlarm(editorBayItem);
 
                     //Save the new item
                     BARISScenario.Instance.SetEditorBay(editorBayItem);
@@ -261,24 +261,6 @@ namespace WildBlueIndustries
                 else
                     GUILayout.Label(" ");
             }
-        }
-
-        protected void setKACAlarm(EditorBayItem editorBayItem)
-        {
-            if (!KACWrapper.AssemblyExists)
-                return;
-            if (!KACWrapper.APIReady)
-                return;
-
-            //Delete the alarm if it exists
-            if (!string.IsNullOrEmpty(editorBayItem.KACAlarmID))
-                KACWrapper.KAC.DeleteAlarm(editorBayItem.KACAlarmID);
-
-            //Calculate the alarm time in seconds
-            double secondsPerDay = GameSettings.KERBIN_TIME == true ? 21600 : 86400;
-            double alarmTime = (editorBayItem.totalIntegrationToAdd / editorBayItem.workerCount) * secondsPerDay;
-            alarmTime += Planetarium.GetUniversalTime();
-            editorBayItem.KACAlarmID = KACWrapper.KAC.CreateAlarm(KACWrapper.KACAPI.AlarmTypeEnum.Raw, editorBayItem.vesselName + BARISScenario.IntegrationCompletedKACAlarm, alarmTime);
         }
 
         protected void drawVesselInfo(EditorBayItem editorBayItem)
@@ -310,7 +292,10 @@ namespace WildBlueIndustries
         protected void drawReliability(EditorBayItem editorBayItem)
         {
             //Reliability
-            GUILayout.Label("<color=white><b>" + Localizer.Format(BARISScenario.ReliabilityLabel) + "</b>" + editorBayItem.baseReliability + "/" + editorBayItem.maxReliability + "</color>");
+            if (KACWrapper.InstanceExists && KACWrapper.APIReady)
+                GUILayout.Label("<color=white><b>" + Localizer.Format(BARISScenario.IntegratedReliabilityLabel) + "</b>" + editorBayItem.maxReliability + "</color>");
+            else
+                GUILayout.Label("<color=white><b>" + Localizer.Format(BARISScenario.ReliabilityLabel) + "</b>" + editorBayItem.baseReliability + "/" + editorBayItem.maxReliability + "</color>");
 
             //Build Time Status
             GUILayout.Label(VehicleIntegrationStatusView.GetIntegrationStatusLabel(editorBayItem));
@@ -396,7 +381,7 @@ namespace WildBlueIndustries
                         {
                             editorBayItem.workerCount -= 1;
                             BARISScenario.Instance.SetEditorBay(editorBayItem);
-                            setKACAlarm(editorBayItem);
+                            BARISScenario.Instance.SetKACAlarm(editorBayItem);
                         }
                     }
                 }
@@ -415,7 +400,7 @@ namespace WildBlueIndustries
                         {
                             editorBayItem.workerCount += 1;
                             BARISScenario.Instance.SetEditorBay(editorBayItem);
-                            setKACAlarm(editorBayItem);
+                            BARISScenario.Instance.SetKACAlarm(editorBayItem);
                         }
                     }
                 }
@@ -432,25 +417,18 @@ namespace WildBlueIndustries
             //Load button
             GUILayout.BeginHorizontal();
             GUI.backgroundColor = XKCDColors.LemonYellow;
-            if (GUILayout.Button(launchIcon, buttonOptions))
+            if (KACWrapper.InstanceExists && KACWrapper.APIReady && editorBayItem.isCompleted)
             {
-                loadVessel(editorBayItem);
-
-                /*
-                //Launch the vessel. This will fill the ship with a default crew, which isn't what we want.
-                if (isVAB)
-                    HighLogic.CurrentGame.editorFacility = EditorFacility.VAB;
-                else
-                    HighLogic.CurrentGame.editorFacility = EditorFacility.SPH;
-                
-                VesselCrewManifest manifest = KSP.UI.CrewAssignmentDialog.Instance.GetManifest();
-                if (manifest == null)
-                    manifest = HighLogic.CurrentGame.CrewRoster.DefaultCrewForVessel(EditorLogic.fetch.ship.SaveShip(), null, true);
-
-                FlightDriver.StartWithNewLaunch(editorBayItem.vesselFilePath, EditorLogic.FlagURL, EditorLogic.fetch.launchSiteName, manifest);
-                 */
+                if (GUILayout.Button(launchIcon, buttonOptions))
+                    loadVessel(editorBayItem);
+                launchIcon = selectLoadIcon();
             }
-            launchIcon = selectLoadIcon();
+            else if (!KACWrapper.AssemblyExists || !KACWrapper.APIReady)
+            {
+                if (GUILayout.Button(launchIcon, buttonOptions))
+                    loadVessel(editorBayItem);
+                launchIcon = selectLoadIcon();
+            }
             GUI.backgroundColor = oldColor;
 
             //Cancel Integration button

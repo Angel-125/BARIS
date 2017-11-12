@@ -389,6 +389,7 @@ namespace WildBlueIndustries
         public static string VesselLabel = "Vessel";
         public static string VesselHasProblem = " has a problem! One of its components has failed.";
         public static string ReliabilityLabel = "Reliability: ";
+        public static string IntegratedReliabilityLabel = "Integrated Reliability: ";
         public static string LASActivatedMsg = " activated the launch abort system!";
         public static string AstronautsEvacuatedMsg = " astronauts were evacuated.";
         public static string SwitchToVesselTitle = "Switch To Vessel";
@@ -554,6 +555,7 @@ namespace WildBlueIndustries
         int eventCardFrequency = 0;
         VesselsCompletedView completedVesselsView = new VesselsCompletedView();
         double qualityCheckInterval;
+        bool ignoreAlarmDelete;
 
         internal void Start()
         {
@@ -562,7 +564,10 @@ namespace WildBlueIndustries
             //Init the KAC Wrapper. KAC Wrapper courtey of TriggerAu
             KACWrapper.InitKACWrapper();
             if (KACWrapper.APIReady)
+            {
                 debugLog("Alarm count: " + KACWrapper.KAC.Alarms.Count);
+                KACWrapper.KAC.onAlarmStateChanged += KAC_onAlarmStateChanged;
+            }
         }
 
         public override void OnAwake()
@@ -1198,6 +1203,10 @@ namespace WildBlueIndustries
         /// </summary>
         public void UpdateBuildTime()
         {
+            //if KAC is installed then we rely upon its timers.
+            if (KACWrapper.AssemblyExists && KACWrapper.APIReady)
+                return;
+
             //If work has been paused then we're done.
             if (workPausedDays > 0)
             {
@@ -1221,8 +1230,6 @@ namespace WildBlueIndustries
 
                 //Calculate integration points
                 integrationPoints = GetWorkerProductivity(bayItem.workerCount, bayItem.isVAB);
-                if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
-                    integrationPoints *= Mathf.RoundToInt(Reputation.CurrentRep / Reputation.RepRange);
 
                 if (integrationPoints < bayItem.totalIntegrationToAdd)
                 {
@@ -1251,6 +1258,36 @@ namespace WildBlueIndustries
                 completedVesselsView.vesselNames = vesselNames;
                 completedVesselsView.SetVisible(true);
             }
+        }
+
+        void KAC_onAlarmStateChanged(KACWrapper.KACAPI.AlarmStateChangedEventArgs args)
+        {
+            foreach (EditorBayItem bayItem in editorBayItems.Values)
+            {
+                //Ignore empty bays.
+                if (string.IsNullOrEmpty(bayItem.vesselName))
+                    continue;
+                if (string.IsNullOrEmpty(bayItem.KACAlarmID))
+                    continue;
+
+                //If the alarm isn't the one we're interested in, then continue.
+                if (bayItem.KACAlarmID != args.alarm.ID)
+                    continue;
+
+                //Complete integration if the alarm was triggered.
+                if (args.eventType == KACWrapper.KACAPI.KACAlarm.AlarmStateEventsEnum.Triggered)
+                {
+                    bayItem.totalIntegrationAdded += bayItem.totalIntegrationToAdd;
+                    bayItem.totalIntegrationToAdd = 0;
+                    bayItem.isCompleted = true;
+                }
+
+                //Clear vessel integration if the alarm was deleted.
+                else if (args.eventType == KACWrapper.KACAPI.KACAlarm.AlarmStateEventsEnum.Deleted && !ignoreAlarmDelete && !bayItem.isCompleted)
+                {
+                    bayItem.Clear();
+                }
+            }            
         }
 
         /// <summary>
@@ -2238,6 +2275,47 @@ namespace WildBlueIndustries
                 FlightLogger.fetch.LogEvent(message);
         }
 
+        /// <summary>
+        /// Sets or updates the Kerbal Alarm Clock alarm for the editor bay
+        /// </summary>
+        /// <param name="editorBayItem">The EditorBayItem to set the integration alarm for.</param>
+        /// <param name="workStoppedDays">How many days has the work been paused.</param>
+        public void SetKACAlarm(EditorBayItem editorBayItem, int workStoppedDays = 0)
+        {
+            if (!KACWrapper.AssemblyExists)
+                return;
+            if (!KACWrapper.APIReady)
+                return;
+
+            //Delete the alarm if it exists
+            if (!string.IsNullOrEmpty(editorBayItem.KACAlarmID))
+                KACWrapper.KAC.DeleteAlarm(editorBayItem.KACAlarmID);
+
+            //Get the start time
+            double startTime = editorBayItem.integrationStartTime;
+            if (startTime == 0)
+            {
+                startTime = Planetarium.GetUniversalTime();
+                editorBayItem.integrationStartTime = startTime;
+            }
+
+            //Calculate the base build time
+            double secondsPerDay = GameSettings.KERBIN_TIME == true ? 21600 : 86400;
+            int buildTimeDays = Mathf.RoundToInt(editorBayItem.totalIntegrationToAdd / BARISScenario.Instance.GetWorkerProductivity(editorBayItem.workerCount, editorBayItem.isVAB));
+            double buildTimeSeconds = buildTimeDays * secondsPerDay;
+
+            //Account for time already spent.
+            double elapsedTime = Planetarium.GetUniversalTime() - startTime;
+            buildTimeSeconds -= elapsedTime;
+
+            //Account for work stoppage
+            if (workStoppedDays > 0)
+                buildTimeSeconds += (double)workStoppedDays * secondsPerDay;
+
+            //Now set the alarm
+            buildTimeSeconds += Planetarium.GetUniversalTime();
+            editorBayItem.KACAlarmID = KACWrapper.KAC.CreateAlarm(KACWrapper.KACAPI.AlarmTypeEnum.Raw, editorBayItem.vesselName + BARISScenario.IntegrationCompletedKACAlarm, buildTimeSeconds);
+        }
         #endregion
 
         #region coroutines
@@ -2595,6 +2673,25 @@ namespace WildBlueIndustries
 
         protected void updateIntegrationTimer()
         {
+            //if KAC is installed then we rely on its integration timers.
+            if (KACWrapper.AssemblyExists && KACWrapper.APIReady)
+            {
+                //Account for work stoppages
+                if (workPausedDays > 0)
+                {
+                    ignoreAlarmDelete = true;
+                    foreach (EditorBayItem bayItem in editorBayItems.Values)
+                    {
+                        if (!string.IsNullOrEmpty(bayItem.KACAlarmID))
+                            SetKACAlarm(bayItem, workPausedDays);
+                    }
+                    ignoreAlarmDelete = false;
+                    workPausedDays = 0;
+                }
+                return;
+            }
+
+            //We're using built-in vehicle integration timers at this point.
             if (integrationStartTime == 0)
                 integrationStartTime = Planetarium.GetUniversalTime();
 

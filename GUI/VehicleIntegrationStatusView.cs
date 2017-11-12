@@ -109,6 +109,36 @@ namespace WildBlueIndustries
 
         public static string GetIntegrationStatusLabel(EditorBayItem editorBayItem)
         {
+            //Defer to KAC alarm time remaining if available
+            if (KACWrapper.InstanceExists && KACWrapper.APIReady && !string.IsNullOrEmpty(editorBayItem.KACAlarmID))
+            {
+                if (editorBayItem.isCompleted)
+                    return "<color=white><b>" + Localizer.Format(BARISScenario.BuildTimeLabelStatus) + "</b>" + Localizer.Format(BARISScenario.BuildTimeLabelDone) + "</color>";
+
+                //Get the alarm we need
+                KACWrapper.KACAPI.KACAlarm kacAlarm = null;
+                int totalAlarms = KACWrapper.KAC.Alarms.Count;
+                for (int index = 0; index < totalAlarms; index++)
+                {
+                    kacAlarm = KACWrapper.KAC.Alarms[index];
+                    if (KACWrapper.KAC.Alarms[index].ID == editorBayItem.KACAlarmID)
+                        break;
+                }
+                if (kacAlarm == null)
+                    return "N/A";
+
+                //Calculate time remaining
+                double secondsPerDay = GameSettings.KERBIN_TIME == true ? 21600 : 86400;
+                double timeRemaining = kacAlarm.AlarmTime - Planetarium.GetUniversalTime();
+                double daysRemaining = timeRemaining / secondsPerDay;
+                if (daysRemaining > 1)
+                    return "<color=white><b>" + Localizer.Format(BARISScenario.BuildTimeLabel) + "</b>" + string.Format("{0:f1}", daysRemaining) + Localizer.Format(BARISScenario.BuildTimeLabelDays) + "</color>";
+                else if (daysRemaining == 1)
+                    return "<color=white><b>" + Localizer.Format(BARISScenario.BuildTimeLabel) + "</b>1" + Localizer.Format(BARISScenario.BuildTimeLabelOneDay) + "</color>";
+                else
+                    return "<color=white><b>" + Localizer.Format(BARISScenario.BuildTimeLabel) + "</b>" + Localizer.Format(BARISScenario.BuildTimeLabelLessDay) + "</color>";
+            }
+
             //Build Time
             if (editorBayItem.totalIntegrationToAdd > 0 && editorBayItem.workerCount > 0)
             {
