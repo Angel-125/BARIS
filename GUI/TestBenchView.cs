@@ -273,7 +273,7 @@ namespace WildBlueIndustries
                 totalMaxQuality += baseQuality + integrationCap;
 
                 //Cost
-                fundsCost += qualityControl.part.partInfo.cost;
+                fundsCost += qualityControl.part.partInfo.cost / 4;
             }
 
             //Now that we have a predicted flight log, we can look at quality after integration.

@@ -52,7 +52,7 @@ namespace WildBlueIndustries
         /// <summary>
         /// Human readable quality display. Broken (0), Poor (1-24), Fair (25-49), Good (50-74), Excellent (75-100)
         /// </summary>
-        [KSPField(guiActive = true, guiName = "Condition")]
+        [KSPField(guiActive = true, guiActiveEditor = true, guiName = "Condition")]
         public string qualityDisplay = string.Empty;
 
         public virtual void GetQualityStats(out int Quality, out int CurrentQuality, out double MTBF, out double CurrentMTBF)

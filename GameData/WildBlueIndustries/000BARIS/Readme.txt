@@ -16,6 +16,9 @@ NOTE: ModuleManager is REQUIRED.
 
 ---REVISION HISTORY---
 
+1.4.8
+- MM Patch syntax updates.
+
 1.4.7
 
 KAC Vehicle Integration
