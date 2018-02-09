@@ -11,7 +11,7 @@ using KSP.Localization;
 #endif
 
 /*
-Source code copyright 2017, by Michael Billard (Angel-125)
+Source code copyright 2018, by Michael Billard (Angel-125)
 License: GNU General Public License Version 3
 License URL: http://www.gnu.org/licenses/
 Wild Blue Industries is trademarked by Michael Billard and may be used for non-commercial purposes. All other rights reserved.
@@ -141,6 +141,8 @@ namespace WildBlueIndustries
 
                 if (reliability < 0)
                     reliability = 0;
+                if (reliability > BARISSettings.QualityCap)
+                    reliability = BARISSettings.QualityCap;
 
                 return reliability;
             }
@@ -158,6 +160,8 @@ namespace WildBlueIndustries
 
                 if (reliability < 0)
                     reliability = 0;
+                if (reliability > BARISSettings.QualityCap)
+                    reliability = BARISSettings.QualityCap;
 
                 return reliability;
             }
@@ -197,6 +201,8 @@ namespace WildBlueIndustries
                 qualityData.flightExperience = flightExperience;
                 partQualityData[index] = qualityData;
             }
+            if (totalQuality > BARISSettings.QualityCap)
+                totalQuality = BARISSettings.QualityCap;
 
             debugLog(this.ToString());
         }

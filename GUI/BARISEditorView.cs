@@ -11,7 +11,7 @@ using KSP.Localization;
 #endif
 
 /*
-Source code copyright 2017, by Michael Billard (Angel-125)
+Source code copyright 2018, by Michael Billard (Angel-125)
 License: GNU General Public License Version 3
 License URL: http://www.gnu.org/licenses/
 Wild Blue Industries is trademarked by Michael Billard and may be used for non-commercial purposes. All other rights reserved.
@@ -26,7 +26,7 @@ namespace WildBlueIndustries
     public class BARISEditorView : Dialog<BARISAppFlightView>
     {
         const int DialogWidth = 400;
-        const int DialogHeight = 520;
+        const int DialogHeight = 560;
 
         public bool isVAB = true;
 
@@ -53,7 +53,10 @@ namespace WildBlueIndustries
         {
             base.SetVisible(newValue);
             if (!newValue)
+            {
+                GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.BACKUP); 
                 return;
+            }
 
             //Are we in VAB or SPH?
             if (EditorLogic.fetch.ship.shipFacility == EditorFacility.VAB)

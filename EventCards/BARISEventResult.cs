@@ -8,7 +8,7 @@ using KSP.IO;
 using KSP.Localization;
 #endif
 /*
-Source code copyright 2017, by Michael Billard (Angel-125)
+Source code copyright 2018, by Michael Billard (Angel-125)
 License: GPLV3
 
 Wild Blue Industries is trademarked by Michael Billard and may be used for non-commercial purposes. All other rights reserved.
@@ -565,35 +565,42 @@ namespace WildBlueIndustries
                 randomIndex = UnityEngine.Random.Range(0, crewRoster.Length - 1);
                 astronaut = crewRoster[randomIndex];
 
-                //Set badass
-                if (statusType == BARISStatusTypes.badS && !astronaut.isBadass)
+                switch (statusType)
                 {
-                    astronaut.isBadass = true;
+                    //Do nothing
+                    default:
+                        return Localizer.Format("Unrecognized BARISStatusType.");
 
-                    //Inform player
-                    message = astronaut.name + Localizer.Format(BARISScenario.StatusBadassMsg);
-                    break;
-                }
+                    case BARISStatusTypes.badS:
+                        if (!astronaut.isBadass)
+                        {
+                            astronaut.isBadass = true;
 
-                else if (astronaut.rosterStatus == ProtoCrewMember.RosterStatus.Available && !astronaut.veteran)
-                {
-                    if (statusType == BARISStatusTypes.missing)
-                    {
-                        astronaut.rosterStatus = ProtoCrewMember.RosterStatus.Missing;
-                        astronaut.StartRespawnPeriod();
-
-                        //Inform player
-                        message = astronaut.name + Localizer.Format(BARISScenario.StatusMissingMsg);
+                            //Inform player
+                            return astronaut.name + Localizer.Format(BARISScenario.StatusBadassMsg);
+                        }
                         break;
-                    }
-                    else
-                    {
-                        astronaut.rosterStatus = ProtoCrewMember.RosterStatus.Dead;
 
-                        //Inform player
-                        message = astronaut.name + Localizer.Format(BARISScenario.StatusDeadMsg);
+                    case BARISStatusTypes.missing:
+                        if (astronaut.rosterStatus == ProtoCrewMember.RosterStatus.Available && !astronaut.veteran)
+                        {
+                            astronaut.rosterStatus = ProtoCrewMember.RosterStatus.Missing;
+                            astronaut.StartRespawnPeriod();
+
+                            //Inform player
+                            return astronaut.name + Localizer.Format(BARISScenario.StatusMissingMsg);
+                        }
                         break;
-                    }
+
+                    case BARISStatusTypes.dead:
+                        if (astronaut.rosterStatus == ProtoCrewMember.RosterStatus.Available && !astronaut.veteran)
+                        {
+                            astronaut.rosterStatus = ProtoCrewMember.RosterStatus.Dead;
+
+                            //Inform player
+                            return astronaut.name + Localizer.Format(BARISScenario.StatusDeadMsg);
+                        }
+                        break;
                 }
             }
 

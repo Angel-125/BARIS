@@ -362,6 +362,7 @@ namespace WildBlueIndustries
         public static string MaintenancePerformedBy = " performs maintenance on the ";
         public static string PartFixedMessage = " is back to normal.";
         public static string PartMaintenanceSuccessful = "Maintenance successfully performed.";
+        public static string PartMaintenanceFailed = "Maintenance attempt failed.";
         public static string PartMaintenanceCriticalFail = "The maintenance made things worse!";
         public static string SmallLeak = " has sprung a small leak!";
         public static string MediumLeak = " is leaking!";
@@ -1154,7 +1155,8 @@ namespace WildBlueIndustries
             cardView.description = eventCard.ApplyResults();
             cardView.imagePath = eventCard.imageFilePath;
 
-            cardView.SetVisible(true);
+            if (!string.IsNullOrEmpty(cardView.description))
+                cardView.SetVisible(true);
         }
 
         /// <summary>
@@ -1470,7 +1472,7 @@ namespace WildBlueIndustries
                 availableVABWorkers = workers;
             else
                 availableSPHWorkers = workers;
-            GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.BACKUP);
+//            GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.BACKUP);
         }
 
         /// <summary>

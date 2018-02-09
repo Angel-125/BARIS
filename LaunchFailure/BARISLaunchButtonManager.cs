@@ -12,7 +12,7 @@ using KSP.Localization;
 #endif
 
 /*
-Source code copyright 2017, by Michael Billard (Angel-125)
+Source code copyright 2018, by Michael Billard (Angel-125)
 License: GNU General Public License Version 3
 License URL: http://www.gnu.org/licenses/
 Wild Blue Industries is trademarked by Michael Billard and may be used for non-commercial purposes. All other rights reserved.
@@ -42,6 +42,12 @@ namespace WildBlueIndustries
         /// The EditorBayItem object that was loaded from the High Bay or Hangar Bay
         /// </summary>
         public static EditorBayItem editorBayItem = null;
+
+        /// <summary>
+        /// Flag to bypass the parts mismatch check. Used when an editor bay item is loaded.
+        /// Flag is reset right after the check.
+        /// </summary>
+        public static bool bypassPartMismatch = false;
 
         private BARISGenericMessageView messageView = new BARISGenericMessageView();
         static bool errorMessageShown = false;
@@ -161,6 +167,13 @@ namespace WildBlueIndustries
             //We also add the integration bonus at this time.
             int integrationPerPart = editorBayItem.totalIntegrationAdded / editorBayItem.breakablePartCount;
             bool partCountMismatch = EditorLogic.fetch.ship.parts.Count != editorBayItem.totalVesselParts;
+            
+            //When loading a vessel from an editor bay, be sure to bypass the part count mismatch.
+            if (bypassPartMismatch)
+            {
+                bypassPartMismatch = false;
+                partCountMismatch = false;
+            }
 
             //Set integration bonus & Flight Experience
             //If the vessel has been tampered with then integration has failed.

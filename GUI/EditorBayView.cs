@@ -11,7 +11,7 @@ using KSP.Localization;
 #endif
 
 /*
-Source code copyright 2017, by Michael Billard (Angel-125)
+Source code copyright 2018, by Michael Billard (Angel-125)
 License: GNU General Public License Version 3
 License URL: http://www.gnu.org/licenses/
 Wild Blue Industries is trademarked by Michael Billard and may be used for non-commercial purposes. All other rights reserved.
@@ -31,7 +31,7 @@ namespace WildBlueIndustries
     public class EditorBayView
     {
         const int InfoPanelWidth = 200;
-        const int InfoPanelHeight = 440;
+        const int InfoPanelHeight = 480;
 
         public int bayID;
         public bool isVAB = true;
@@ -44,6 +44,7 @@ namespace WildBlueIndustries
         private Vector2 originPoint = new Vector2(0, 0);
         private GUILayoutOption[] infoPanelOptions = new GUILayoutOption[] { GUILayout.Width(InfoPanelWidth), GUILayout.Height(InfoPanelHeight) };
         private GUILayoutOption[] buttonOptions = new GUILayoutOption[] { GUILayout.Height(32), GUILayout.Width(32) };
+        private GUILayoutOption[] workerButtonOptions = new GUILayoutOption[] { GUILayout.Height(40), GUILayout.Width(40) };
         private float workerRequest;
 
         //Icons
@@ -363,13 +364,19 @@ namespace WildBlueIndustries
             Color oldColor = GUI.backgroundColor;
             ShipConstruct ship = EditorLogic.fetch.ship;
 
-            //Add/remove workers
-            GUILayout.BeginHorizontal();
-
+            //Worker count
+            GUILayout.BeginVertical();
             GUILayout.Label("<color=white><b>" + Localizer.Format(BARISScenario.WorkersLabel) + "</b>" + editorBayItem.workerCount + "/" + BARISScenario.MaxWorkersPerBay + "</color>");
 
+            GUILayout.BeginHorizontal();
+            //0 workers button
+            if (GUILayout.Button("0", workerButtonOptions))
+            {
+                editorBayItem.workerCount = 0;
+            }
+
             //Remove workers button
-            if (GUILayout.RepeatButton("-"))
+            if (GUILayout.RepeatButton("-", workerButtonOptions))
             {
                 workerRequest += 0.1f;
                 if (workerRequest >= 1.0f)
@@ -388,7 +395,7 @@ namespace WildBlueIndustries
             }
 
             //Add workers button
-            if (GUILayout.RepeatButton("+"))
+            if (GUILayout.RepeatButton("+", workerButtonOptions))
             {
                 workerRequest += 0.1f;
                 if (workerRequest >= 1.0f)
@@ -406,7 +413,13 @@ namespace WildBlueIndustries
                 }
             }
 
+            //Max button
+            if (GUILayout.Button("MAX", workerButtonOptions))
+            {
+                editorBayItem.workerCount = BARISScenario.MaxWorkersPerBay;
+            }
             GUILayout.EndHorizontal();
+            GUILayout.EndVertical();
         }
 
         protected void drawLoadAndCancelButtons(EditorBayItem editorBayItem)
@@ -622,6 +635,7 @@ namespace WildBlueIndustries
             BARISScenario.Instance.ReturnWorkers(editorBayItem);
 
             //Set the launch button manager's editor bay item.
+            BARISLaunchButtonManager.bypassPartMismatch = true;
             BARISLaunchButtonManager.editorBayItem = editorBayItem;
 
             //Load the ship from the editor bay

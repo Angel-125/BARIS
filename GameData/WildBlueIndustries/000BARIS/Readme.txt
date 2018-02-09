@@ -16,8 +16,20 @@ NOTE: ModuleManager is REQUIRED.
 
 ---REVISION HISTORY---
 
+1.4.9
+- Added 0-workers and max-workers buttons to the Space Center hiring screen and High bay/hangar bay views.
+- Adding/removing workers won't happen at a glacial pace any more.
+- Maintenance result feedback messages now displayed even when performing maintenance during EVAs.
+- Part condition summary info panels in the flight screen can now be scrolled.
+- Fixed Intestinal Fortitude event card's tendency to kill astronauts when they should become BadS.
+- Fixed situations where event cards would show empty events.
+- Fixed incorrect parts mismatch error message that appears when loading a vessel from a High Bay/Hangar Bay when you already have another vessel in the editor.
+- Fixed NREs that happen when changing BARIS settings while creating a new game.
+- Fixed vessel quality ratings that exceed the maximum allowed quality cap.
+
 1.4.8
 - MM Patch syntax updates.
+- SSTU MM patch- thanks AkiraR!
 
 1.4.7
 

@@ -351,6 +351,8 @@ namespace WildBlueIndustries
                     break;
 
                 case QualityCheckStatus.fail:
+                    message = Localizer.Format(BARISScenario.PartMaintenanceFailed);
+                    BARISScenario.Instance.LogPlayerMessage(message);
                     break;
 
                 case QualityCheckStatus.astronautAverted:
@@ -846,11 +848,8 @@ namespace WildBlueIndustries
             currentQuality -= UnityEngine.Random.Range(1, BARISScenario.QualityCheckFailLoss);
 
             //Inform player
-            if (this.part.vessel == FlightGlobals.ActiveVessel)
-            {
-                string message = Localizer.Format(BARISScenario.PartMaintenanceCriticalFail);
-                BARISScenario.Instance.LogPlayerMessage(message);
-            }
+            string message = Localizer.Format(BARISScenario.PartMaintenanceCriticalFail);
+            BARISScenario.Instance.LogPlayerMessage(message);
 
             //If our quality has dropped too much, then the part is broken
             if (currentQuality <= 0)
@@ -877,14 +876,11 @@ namespace WildBlueIndustries
                 currentQuality = maxQuality;
 
             //Inform the player
-            if (this.part.vessel == FlightGlobals.ActiveVessel)
-            {
-                string message = Localizer.Format(BARISScenario.PartMaintenanceSuccessful);
-                BARISScenario.Instance.LogPlayerMessage(message);
-            }
+            string message = Localizer.Format(BARISScenario.PartMaintenanceSuccessful);
+            BARISScenario.Instance.LogPlayerMessage(message);
 
             UpdateQualityDisplay(BARISScenario.GetConditionSummary(currentMTBF, MaxMTBF, currentQuality, MaxQuality));
-            debugLog("Part " + this.part.partInfo.title + " is maintenance succeeded.");
+            debugLog("Part " + this.part.partInfo.title + " maintenance succeeded.");
         }
 
         /// <summary>

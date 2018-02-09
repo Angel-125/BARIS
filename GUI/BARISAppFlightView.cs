@@ -10,7 +10,7 @@ using KSP.Localization;
 #endif
 
 /*
-Source code copyright 2017, by Michael Billard (Angel-125)
+Source code copyright 2018, by Michael Billard (Angel-125)
 License: GNU General Public License Version 3
 License URL: http://www.gnu.org/licenses/
 Wild Blue Industries is trademarked by Michael Billard and may be used for non-commercial purposes. All other rights reserved.
@@ -34,6 +34,7 @@ namespace WildBlueIndustries
         private GUILayoutOption[] infoPanelOptions = new GUILayoutOption[] { GUILayout.Height(InfoPanelHeight) };
         private GUILayoutOption[] buttonOptions = new GUILayoutOption[] { GUILayout.Height(24), GUILayout.Width(24) };
         private Vector2 originPoint = new Vector2(0, 0);
+        private List<Vector2> partInfoScrollPositions = new List<Vector2>();
         static Texture wrenchIcon = null;
         int reliability = 0;
 
@@ -55,6 +56,8 @@ namespace WildBlueIndustries
             if (partList.Count > 0)
             {
                 breakableParts = partList.ToArray();
+                for (int curItem = 0; curItem < breakableParts.Length; curItem++)
+                    partInfoScrollPositions.Add(new Vector2(0, 0));
 
                 //Calculate reliability
                 for (int index = 0; index < breakableParts.Length; index++)
@@ -228,6 +231,7 @@ namespace WildBlueIndustries
         protected void drawBreakableParts()
         {
             BreakablePart breakablePart;
+            Vector2 panelScrollPos;
 
             scrollPos = GUILayout.BeginScrollView(scrollPos, scrollViewOptions);
 
@@ -239,7 +243,9 @@ namespace WildBlueIndustries
                 breakablePart = breakableParts[index];
 
                 //Calculate the height based upon how many breakable part modules the part has.
-                GUILayout.BeginScrollView(originPoint, infoPanelOptions);
+                panelScrollPos = partInfoScrollPositions[index];
+                panelScrollPos = GUILayout.BeginScrollView(panelScrollPos, infoPanelOptions);
+                partInfoScrollPositions[index] = panelScrollPos;
 
                 //Part title
                 GUILayout.Label("<color=white><b>" + breakablePart.part.partInfo.title + "</b></color>");

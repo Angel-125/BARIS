@@ -11,7 +11,7 @@ using KSP.Localization;
 #endif
 
 /*
-Source code copyright 2017, by Michael Billard (Angel-125)
+Source code copyright 2018, by Michael Billard (Angel-125)
 License: GNU General Public License Version 3
 License URL: http://www.gnu.org/licenses/
 Wild Blue Industries is trademarked by Michael Billard and may be used for non-commercial purposes. All other rights reserved.
@@ -66,6 +66,10 @@ namespace WildBlueIndustries
             {
                 BARISScenario.Instance.PlayProblemSound();
             }
+            else
+            {
+                GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.BACKUP);
+            }
         }
 
         protected void drawVABWorkers()
@@ -83,6 +87,13 @@ namespace WildBlueIndustries
             GUILayout.Label("<color=white><b>" + BARISScenario.VABWorkersLabel + "</b>" + totalWorkers + "/" + maxAvailableWorkers +
                 " (" + workersWorking + Localizer.Format(BARISScenario.WorkersWorkingLabel) + ")</color>");
             GUILayout.BeginHorizontal();
+
+            //0 workers button
+            if (GUILayout.Button("0"))
+            {
+                availableWorkers = 0;
+                BARISScenario.Instance.SetAvailableWorkers(availableWorkers, true);
+            }
 
             //Remove workers button
             if (GUILayout.RepeatButton("-"))
@@ -112,6 +123,12 @@ namespace WildBlueIndustries
                         BARISScenario.Instance.SetAvailableWorkers(availableWorkers, true);
                     }
                 }
+            }
+
+            //Max workers button
+            if (GUILayout.Button("MAX"))
+            {
+                BARISScenario.Instance.SetAvailableWorkers(maxAvailableWorkers, true);
             }
 
             GUILayout.EndHorizontal();
@@ -132,6 +149,13 @@ namespace WildBlueIndustries
                 " (" + workersWorking + Localizer.Format(BARISScenario.WorkersWorkingLabel) + ")</color>");
             GUILayout.BeginHorizontal();
 
+            //0 workers button
+            if (GUILayout.Button("0"))
+            {
+                availableWorkers = 0;
+                BARISScenario.Instance.SetAvailableWorkers(availableWorkers, true);
+            }
+
             //Remove workers button
             if (GUILayout.RepeatButton("-"))
             {
@@ -160,6 +184,12 @@ namespace WildBlueIndustries
                         BARISScenario.Instance.SetAvailableWorkers(availableWorkers, false);
                     }
                 }
+            }
+
+            //Max workers button
+            if (GUILayout.Button("MAX"))
+            {
+                BARISScenario.Instance.SetAvailableWorkers(maxAvailableWorkers, false);
             }
 
             GUILayout.EndHorizontal();
