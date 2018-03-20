@@ -106,11 +106,6 @@
             Flag to indicate that the part module is broken. If broken, then it can't be declared broken again by the ModuleQualityControl.
             </summary>
         </member>
-        <member name="M:WildBlueIndustries.ModuleBreakableConverter.StartConverter">
-            <summary>
-            This method will start the converter. When starting, it will make a quality check. Use this method in place of StartResourceConverter.
-            </summary>
-        </member>
         <member name="T:WildBlueIndustries.ModuleBreakableHarvester">
             <summary>
             ModuleBreakableHarvester is designed to replace ModuleResourceHarvester and interface ModuleQualityControl. When a part is declared broken, it disables the harvester, and when the part is declared fixed,

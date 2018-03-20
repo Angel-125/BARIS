@@ -45,7 +45,7 @@ namespace WildBlueIndustries
 
         protected BaseQualityControl qualityControl;
 
-        protected void debugLog(string message)
+        protected virtual void debugLog(string message)
         {
             if (BARISBridge.showDebug == true)
                 Debug.Log("[" + this.ClassName + "] - " + message);

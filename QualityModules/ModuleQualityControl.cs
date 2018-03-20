@@ -6,9 +6,9 @@ using UnityEngine;
 using KSP.IO;
 using FinePrint;
 using KSP.UI.Screens;
-#if !KSP122
 using KSP.Localization;
-#endif
+//using Expansions;
+//using Expansions.Missions.Adjusters;
 
 /*
 Source code copyrighgt 2017, by Michael Billard (Angel-125)

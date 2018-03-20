@@ -110,7 +110,7 @@ namespace WildBlueIndustries
             {
                 var bytes = File.ReadAllBytes<T>(filename);
                 Texture2D texture = new Texture2D(16, 16, TextureFormat.ARGB32, false);
-                texture.LoadImage(bytes);
+                texture.LoadRawTextureData(bytes);
                 return texture;
             }
             else

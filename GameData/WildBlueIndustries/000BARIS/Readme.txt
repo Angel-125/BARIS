@@ -16,6 +16,9 @@ NOTE: ModuleManager is REQUIRED.
 
 ---REVISION HISTORY---
 
+1.5.0
+- Recompiled for KSP 1.4.1
+
 1.4.9
 - Added 0-workers and max-workers buttons to the Space Center hiring screen and High bay/hangar bay views.
 - Adding/removing workers won't happen at a glacial pace any more.

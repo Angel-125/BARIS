@@ -51,12 +51,9 @@ namespace WildBlueIndustries
                 Debug.Log("[" + this.ClassName + "] - " + message);
         }
 
-        /// <summary>
-        /// This method will start the converter. When starting, it will make a quality check. Use this method in place of StartResourceConverter.
-        /// </summary>
-        [KSPEvent(guiActive = true, guiActiveUnfocused = true, unfocusedRange = 5.0f, guiName = "Start Converter")]
-        public virtual void StartConverter()
+        public override void StartResourceConverter()
         {
+            base.StartResourceConverter();
             //If the drill is broken, then don't start the converter.
             if (isBroken)
             {
@@ -69,36 +66,16 @@ namespace WildBlueIndustries
                 return;
             }
 
-            //Update events
-            Events["StartConverter"].active = false;
-            Events["StopConverter"].active = true;
-
             //Start the converter
-            StartResourceConverter();
             qualityControl.UpdateActivationState();
             if (BARISBridge.ConvertersCanFail)
                 qualityControl.PerformQualityCheck();
         }
 
-        [KSPEvent(guiName = "Stop Converter", guiActive = true)]
-        public virtual void StopConverter()
+        public override void StopResourceConverter()
         {
-            Events["StartConverter"].active = true;
-            Events["StopConverter"].active = false;
-            StopResourceConverter();
+            base.StopResourceConverter();
             qualityControl.UpdateActivationState();
-        }
-
-        [KSPAction()]
-        public void StartConverterAction(KSPActionParam param)
-        {
-            StartConverter();
-        }
-
-        [KSPAction()]
-        public void StopConverterAction(KSPActionParam param)
-        {
-            StopConverter();
         }
 
         public virtual void SetGuiVisible(bool isVisible)
@@ -107,50 +84,22 @@ namespace WildBlueIndustries
             {
                 if (ModuleIsActive())
                 {
-                    Events["StartConverter"].active = false;
-                    Events["StopConverter"].active = true;
+                    Events["StartResourceConverter"].active = false;
+                    Events["StopResourceConverter"].active = true;
                 }
 
                 else
                 {
-                    Events["StartConverter"].active = true;
-                    Events["StopConverter"].active = false;
+                    Events["StartResourceConverter"].active = true;
+                    Events["StopResourceConverter"].active = false;
                 }
             }
 
             else
             {
-                Events["StartConverter"].active = false;
-                Events["StopConverter"].active = false;
+                Events["StartResourceConverter"].active = false;
+                Events["StopResourceConverter"].active = false;
             }
-        }
-
-        public override void OnStart(StartState state)
-        {
-            base.OnStart(state);
-
-            //Setup the events
-            Events["StartConverter"].guiName = "Start " + ConverterName;
-            Events["StopConverter"].guiName = "Stop " + ConverterName;
-            Events["StartResourceConverter"].active = false;
-            Events["StopResourceConverter"].active = false;
-            if (IsActivated)
-            {
-                Events["StartConverter"].active = false;
-                Events["StopConverter"].active = true;
-            }
-
-            else
-            {
-                Events["StartConverter"].active = true;
-                Events["StopConverter"].active = false;
-            }
-
-            //Setup actions
-            Actions["StartResourceConverterAction"].active = false;
-            Actions["StartConverterAction"].guiName = StartActionName;
-            Actions["StopResourceConverterAction"].active = false;
-            Actions["StopConverterAction"].guiName = StartActionName;
         }
 
         public virtual void Destroy()
@@ -219,6 +168,7 @@ namespace WildBlueIndustries
         }
         #endregion
 
+        /*
         public override void OnUpdate()
         {
             base.OnUpdate();
@@ -242,7 +192,7 @@ namespace WildBlueIndustries
                 Events["StopConverter"].active = true;
             }
         }
-
+        */
         protected override void PostProcess(ConverterResults result, double deltaTime)
         {
             base.PostProcess(result, deltaTime);
@@ -256,7 +206,7 @@ namespace WildBlueIndustries
             if (isBroken)
             {
                 StopResourceConverter();
-                Events["StartConverter"].active = false;
+//                Events["StartConverter"].active = false;
             }
         }
 

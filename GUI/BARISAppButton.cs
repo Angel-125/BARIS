@@ -40,6 +40,13 @@ namespace WildBlueIndustries
         {
             appIcon = GameDatabase.Instance.GetTexture("WildBlueIndustries/000BARIS/BARISIcon", false);
             GameEvents.onGUIApplicationLauncherReady.Add(SetupGUI);
+            flightAppView = new BARISAppFlightView();
+            trackingAppView = new BARISAppTrackingView();
+            centerAppView = new BARISAppCenterView();
+            instructionsView = new BARISInstructions();
+            editorView = new BARISEditorView();
+            vehicleIntegrationStatusView = new VehicleIntegrationStatusView();
+            kctEditorView = new KCTEditorView();
         }
 
         public void Destroy()
