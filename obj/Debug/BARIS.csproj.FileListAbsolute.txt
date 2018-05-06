@@ -17,6 +17,9 @@ C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\Ionic.Zip.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\TDx.TDxInput.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\RedShellSDK.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\BARISBridge.pdb
+<<<<<<< HEAD
 C:\Projects\KSP\WildBlueIndustries\BARIS\obj\Debug\BARIS.csprojResolveAssemblyReference.cache
+=======
+>>>>>>> origin/master
 C:\Projects\KSP\WildBlueIndustries\BARIS\obj\Debug\BARIS.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\obj\Debug\BARIS.pdb
