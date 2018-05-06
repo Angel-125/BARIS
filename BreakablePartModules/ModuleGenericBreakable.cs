@@ -93,6 +93,12 @@ namespace WildBlueIndustries
         [KSPField(isPersistant = true)]
         public bool isBroken;
 
+        /// <summary>
+        /// Field to indicate that the part is mothballed.
+        /// </summary>
+        [KSPField(isPersistant = true)]
+        public bool isMothballed;
+
         protected ModuleQualityControl qualityControl;
         protected List<PartModule> breakablePartModules = new List<PartModule>();
 
@@ -125,6 +131,7 @@ namespace WildBlueIndustries
             qualityControl.onUpdateSettings -= onUpdateSettings;
             qualityControl.onPartBroken -= OnPartBroken;
             qualityControl.onPartFixed -= OnPartFixed;
+            qualityControl.onMothballStateChanged -= onMothballStateChanged;
 
             if (checkQualityDuringRCSToggle)
                 BARISScenario.Instance.onSasUpdate -= onRCSUpdate;
@@ -132,6 +139,11 @@ namespace WildBlueIndustries
                 BARISScenario.Instance.onSasUpdate -= onSASUpdate;
             if (checkQualityDuringThrottling)
                 BARISScenario.Instance.onThrottleUpDown -= onThrottleUpdate;
+        }
+
+        public void onMothballStateChanged(bool isMothballed)
+        {
+            this.isMothballed = isMothballed;
         }
 
         protected void onThrottleUpdate(bool isThrottledUp)
@@ -189,6 +201,7 @@ namespace WildBlueIndustries
             qualityControl.onUpdateSettings += onUpdateSettings;
             qualityControl.onPartBroken += OnPartBroken;
             qualityControl.onPartFixed += OnPartFixed;
+            qualityControl.onMothballStateChanged += onMothballStateChanged;
 
             //Handle persistence case for broken part.
             if (isBroken)

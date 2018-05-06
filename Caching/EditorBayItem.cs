@@ -230,6 +230,8 @@ namespace WildBlueIndustries
         {
             DeleteSnapshot();
 
+            if (File.Exists(vesselFilePath))
+                File.Delete(vesselFilePath);
             vesselFilePath = string.Empty;
             vesselName = string.Empty;
             workerCount = 0;

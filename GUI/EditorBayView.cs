@@ -84,21 +84,10 @@ namespace WildBlueIndustries
 
         public EditorBayView(int editorBayID, bool isVABBay)
         {
+            //Get the editor bay item.
             bayID = editorBayID;
             isVAB = isVABBay;
-            editorBayItem = BARISScenario.Instance.GetEditorBay(isVAB, bayID);
-            if (editorBayItem != null)
-            {
-                debugLog("Bay " + bayID + " exists.");
-                debugLog(editorBayItem.ToString());
-            }
-
-            else
-            {
-                debugLog("Bay " + bayID + " does not exist, creating.");
-                editorBayItem = new EditorBayItem();
-                editorBayItem = BARISScenario.Instance.AddEditorBay(isVAB, bayID);
-            }
+            getEditorBayItem();
 
             //Get the thumbnails folder.
             // See: http://stackoverflow.com/questions/52797/how-do-i-get-the-path-of-the-assembly-the-code-is-in/283917#283917
@@ -206,7 +195,7 @@ namespace WildBlueIndustries
 
                     //Generate snapshot of the vessel
                     ConfigNode shipNode = ship.SaveShip();
-                    editorBayItem.vesselFilePath = savesFolder + ship.shipName + isVAB + editorBayItem.editorBayID + ".cfg";
+                    editorBayItem.vesselFilePath = savesFolder + "Bay" + editorBayItem.editorBayID + isVAB + ".cfg";
                     debugLog("Vessel file: " + editorBayItem.vesselFilePath);
                     if (File.Exists(editorBayItem.vesselFilePath))
                         File.Delete(editorBayItem.vesselFilePath);
@@ -279,8 +268,9 @@ namespace WildBlueIndustries
             else if (File.Exists(editorBayItem.thumbnailPath))
             {
                 byte[] fileData = File.ReadAllBytes(editorBayItem.thumbnailPath);
-                editorBayItem.vesselThumbnail = new Texture2D(2, 2);
-                editorBayItem.vesselThumbnail.LoadImage(fileData);
+                editorBayItem.vesselThumbnail = new Texture2D(175, 175);
+//                editorBayItem.vesselThumbnail.LoadImage(fileData);
+                ImageConversion.LoadImage(editorBayItem.vesselThumbnail, fileData);
                 GUILayout.Label(editorBayItem.vesselThumbnail, new GUILayoutOption[] { GUILayout.Width(175), GUILayout.Height(175) });
             }
 
@@ -323,7 +313,7 @@ namespace WildBlueIndustries
                 //Can we afford it?
                 if (Funding.CanAfford(rushJobCost))
                 {
-                    if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER && !BARISScenario.showDebug)
+                    if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
                         Funding.Instance.AddFunds(-rushJobCost, TransactionReasons.Any);
 
                     //Add the integration cap to the base quality, and clear the cap.
@@ -333,12 +323,12 @@ namespace WildBlueIndustries
                         editorBayItem.totalIntegrationToAdd = 0;
                     }
 
+                    //Load the vessel
+                    loadVessel(editorBayItem, false);
+
                     //Delete the KAC alarm if any
                     if (KACWrapper.AssemblyExists && KACWrapper.APIReady && !string.IsNullOrEmpty(editorBayItem.KACAlarmID))
                         KACWrapper.KAC.DeleteAlarm(editorBayItem.KACAlarmID);
-
-                    //Load the vessel
-                    loadVessel(editorBayItem, false);
                 }
                 else //Inform user
                 {
@@ -629,6 +619,8 @@ namespace WildBlueIndustries
 
         protected void loadVessel(EditorBayItem editorBayItem, bool closeDialog = true)
         {
+            if (string.IsNullOrEmpty(editorBayItem.vesselName))
+                getEditorBayItem();
             debugLog("loadVessel called, attempting to load " + editorBayItem.vesselName);
 
             //Return workers
@@ -645,6 +637,23 @@ namespace WildBlueIndustries
             //Close the view.
             if (closeView != null && closeDialog)
                 closeView();
+        }
+
+        protected void getEditorBayItem()
+        {
+            editorBayItem = BARISScenario.Instance.GetEditorBay(isVAB, bayID);
+            if (editorBayItem != null)
+            {
+                debugLog("Bay " + bayID + " exists.");
+                debugLog(editorBayItem.ToString());
+            }
+
+            else
+            {
+                debugLog("Bay " + bayID + " does not exist, creating.");
+                editorBayItem = new EditorBayItem();
+                editorBayItem = BARISScenario.Instance.AddEditorBay(isVAB, bayID);
+            }
         }
     }
 }

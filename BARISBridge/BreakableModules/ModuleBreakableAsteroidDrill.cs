@@ -44,6 +44,7 @@ namespace WildBlueIndustries
         public string qualityCheckSkill = "RepairSkill";
 
         protected BaseQualityControl qualityControl;
+        protected bool isMothballed;
 
         protected void debugLog(string message)
         {
@@ -108,12 +109,18 @@ namespace WildBlueIndustries
             qualityControl.onPartBroken -= OnPartBroken;
             qualityControl.onPartFixed -= OnPartFixed;
             qualityControl.onUpdateSettings -= onUpdateSettings;
+            qualityControl.onMothballStateChanged -= onMothballStateChanged;
         }
 
         protected void onUpdateSettings(BaseQualityControl moduleQualityControl)
         {
             if (!BARISBridge.DrillsCanFail)
                 isBroken = false;
+        }
+
+        public void onMothballStateChanged(bool isMothballed)
+        {
+            this.isMothballed = isMothballed;
         }
 
         #region ICanBreak
@@ -142,6 +149,7 @@ namespace WildBlueIndustries
             qualityControl.onPartBroken += OnPartBroken;
             qualityControl.onPartFixed += OnPartFixed;
             qualityControl.onUpdateSettings += onUpdateSettings;
+            qualityControl.onMothballStateChanged += onMothballStateChanged;
 
             //Make sure we're broken
             if (isBroken)
@@ -195,7 +203,7 @@ namespace WildBlueIndustries
                 return;
             if (qualityControl == null)
                 return;
-            if (isBroken)
+            if (isBroken || isMothballed)
             {
                 StopResourceConverter();
                 Events["StartConverter"].active = false;

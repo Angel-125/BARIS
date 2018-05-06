@@ -52,6 +52,11 @@
             Human readable quality display. Broken (0), Poor (1-24), Fair (25-49), Good (50-74), Excellent (75-100)
             </summary>
         </member>
+        <member name="F:WildBlueIndustries.BaseQualityControl.isMothballed">
+            <summary>
+            Field to indicate whether or not the part is mothballed.
+            </summary>
+        </member>
         <member name="E:WildBlueIndustries.BaseQualityControl.onPartBroken">
             <summary>
             Fired when the part is declared broken. Individual breakable part modules also receive this state change through the ICanBreak interface.
@@ -65,6 +70,11 @@
         <member name="E:WildBlueIndustries.BaseQualityControl.onUpdateSettings">
             <summary>
             Fired when any of the difficulty settings have been changed.
+            </summary>
+        </member>
+        <member name="E:WildBlueIndustries.BaseQualityControl.onMothballStateChanged">
+            <summary>
+            Fired when the mothball state changes.
             </summary>
         </member>
         <member name="T:WildBlueIndustries.ModuleBreakableAsteroidDrill">
@@ -104,11 +114,6 @@
         <member name="F:WildBlueIndustries.ModuleBreakableConverter.isBroken">
             <summary>
             Flag to indicate that the part module is broken. If broken, then it can't be declared broken again by the ModuleQualityControl.
-            </summary>
-        </member>
-        <member name="M:WildBlueIndustries.ModuleBreakableConverter.StartConverter">
-            <summary>
-            This method will start the converter. When starting, it will make a quality check. Use this method in place of StartResourceConverter.
             </summary>
         </member>
         <member name="T:WildBlueIndustries.ModuleBreakableHarvester">

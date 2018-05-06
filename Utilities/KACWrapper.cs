@@ -62,8 +62,7 @@ namespace WildBlueIndustries
         /// <summary>
         /// This method will set up the KAC object and wrap all the methods/functions
         /// </summary>
-        /// <param name="Force">This option will force the Init function to rebind everything</param>
-        /// <returns></returns>
+        /// <returns>True if the wrapper worked, false if not.</returns>
         public static Boolean InitKACWrapper()
         {
             //if (!_KACWrapped )
@@ -343,7 +342,6 @@ namespace WildBlueIndustries
             /// <summary>
             /// Delete an Alarm
             /// </summary>
-            /// <param name="AlarmID">Unique ID of the alarm</param>
             /// <returns>Success of the deletion</returns>
             internal Boolean DrawAlarmActionChoice(ref AlarmActionEnum Choice, String LabelText, Int32 LabelWidth, Int32 ButtonWidth)
             {

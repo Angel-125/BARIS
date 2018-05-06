@@ -44,8 +44,9 @@ namespace WildBlueIndustries
         public bool isBroken;
 
         protected BaseQualityControl qualityControl;
+        protected bool isMothballed;
 
-        protected void debugLog(string message)
+        protected virtual void debugLog(string message)
         {
             if (BARISBridge.showDebug == true)
                 Debug.Log("[" + this.ClassName + "] - " + message);
@@ -109,6 +110,12 @@ namespace WildBlueIndustries
             qualityControl.onPartBroken -= OnPartBroken;
             qualityControl.onPartFixed -= OnPartFixed;
             qualityControl.onUpdateSettings -= onUpdateSettings;
+            qualityControl.onMothballStateChanged -= onMothballStateChanged;
+        }
+
+        public void onMothballStateChanged(bool isMothballed)
+        {
+            this.isMothballed = isMothballed;
         }
 
         protected void onUpdateSettings(BaseQualityControl moduleQualityControl)
@@ -143,6 +150,7 @@ namespace WildBlueIndustries
             qualityControl.onPartBroken += OnPartBroken;
             qualityControl.onPartFixed += OnPartFixed;
             qualityControl.onUpdateSettings += onUpdateSettings;
+            qualityControl.onMothballStateChanged += onMothballStateChanged;
 
             //Make sure we're broken
             if (isBroken)
@@ -196,7 +204,7 @@ namespace WildBlueIndustries
                 return;
             if (qualityControl == null)
                 return;
-            if (isBroken)
+            if (isBroken || isMothballed)
             {
                 StopResourceConverter();
                 Events["StartConverter"].active = false;

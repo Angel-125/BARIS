@@ -27,6 +27,7 @@ namespace WildBlueIndustries
     public delegate void OnPartBrokenEvent(BaseQualityControl qualityControl);
     public delegate void OnPartFixedEvent(BaseQualityControl qualityControl);
     public delegate void OnUpdateSettingsEvent(BaseQualityControl qualityControl);
+    public delegate void OnMothballStateChangedEvent(bool isMothballed);
 
     /// <summary>
     /// This is a stub class designed to create a bridge between BARIS and mods that use BARIS. It also serves as the base class for ModuleQualityControl. It is part of the BARISBridge plugin.
@@ -50,10 +51,31 @@ namespace WildBlueIndustries
         public event OnUpdateSettingsEvent onUpdateSettings;
 
         /// <summary>
+        /// Fired when the mothball state changes.
+        /// </summary>
+        public event OnMothballStateChangedEvent onMothballStateChanged;
+
+        /// <summary>
         /// Human readable quality display. Broken (0), Poor (1-24), Fair (25-49), Good (50-74), Excellent (75-100)
         /// </summary>
         [KSPField(guiActive = true, guiActiveEditor = true, guiName = "Condition")]
         public string qualityDisplay = string.Empty;
+
+        /// <summary>
+        /// Field to indicate whether or not the part is mothballed.
+        /// </summary>
+        [KSPField(isPersistant = true)]
+        public bool isMothballed;
+
+        public virtual void SetMothballState(bool mothballState)
+        {
+            //Set the flag
+            isMothballed = mothballState;
+
+            //Update breakable parts
+            if (onMothballStateChanged != null)
+                onMothballStateChanged(isMothballed);
+        }
 
         public virtual void GetQualityStats(out int Quality, out int CurrentQuality, out double MTBF, out double CurrentMTBF)
         {

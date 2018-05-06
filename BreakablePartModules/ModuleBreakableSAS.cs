@@ -34,7 +34,7 @@ namespace WildBlueIndustries
     {
         ModuleSAS moduleSAS;
         ModuleReactionWheel reactionWheel;
-        BaseQualityControl qualityControl;
+        ModuleQualityControl qualityControl;
 
         /// <summary>
         /// What skill to use when performing the quality check. This is not always the same skill required to repair or maintain the part.
@@ -53,6 +53,8 @@ namespace WildBlueIndustries
         /// </summary>
         [KSPField(isPersistant = true)]
         public bool isBroken;
+
+        bool isMothballed;
 
         protected void debugLog(string message)
         {
@@ -73,10 +75,14 @@ namespace WildBlueIndustries
             qualityControl.onUpdateSettings -= onUpdateSettings;
             qualityControl.onPartBroken -= OnPartBroken;
             qualityControl.onPartFixed -= OnPartFixed;
+            qualityControl.onMothballStateChanged -= onMothballStateChanged;
         }
 
         protected void onSASUpdate(bool sasIsActive)
         {
+            if (isMothballed)
+                return;
+
             if (isBroken)
             {
                 IsActive = false;
@@ -111,14 +117,38 @@ namespace WildBlueIndustries
         public void SubscribeToEvents(BaseQualityControl moduleQualityControl)
         {
             debugLog("SubscribeToEvents");
-            qualityControl = moduleQualityControl;
+            qualityControl = (ModuleQualityControl)moduleQualityControl;
             qualityControl.onUpdateSettings += onUpdateSettings;
             qualityControl.onPartBroken += OnPartBroken;
             qualityControl.onPartFixed += OnPartFixed;
+            qualityControl.onMothballStateChanged += onMothballStateChanged;
 
             //Handle persistence case for broken part.
             if (isBroken)
                 OnPartBroken(qualityControl);
+        }
+
+        public void onMothballStateChanged(bool isMothballed)
+        {
+            this.isMothballed = isMothballed;
+
+            bool enabledState = isMothballed;
+            if (!isMothballed && isBroken)
+                enabledState = false;
+            else if (!isMothballed)
+                enabledState = true;
+
+            if (moduleSAS != null)
+            {
+                moduleSAS.enabled = enabledState;
+                moduleSAS.isEnabled = enabledState;
+            }
+
+            if (reactionWheel != null)
+            {
+                reactionWheel.enabled = enabledState;
+                reactionWheel.isEnabled = enabledState;
+            }
         }
 
         protected void onUpdateSettings(BaseQualityControl moduleQualityControl)

@@ -245,7 +245,6 @@ namespace WildBlueIndustries
             int totalMaxQualityAfter = 0;
             int baseQuality = 0;
             int integrationCap = BARISScenario.Instance.GetIntegrationCap(isVAB);
-            int flightBonus = 0;
             string partTtile;
             int flightCount = 0;
 

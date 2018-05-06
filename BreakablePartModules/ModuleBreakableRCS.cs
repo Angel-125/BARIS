@@ -33,7 +33,7 @@ namespace WildBlueIndustries
     public class ModuleBreakableRCS : PartModule, ICanBreak
     {
         ModuleRCS rcsModule;
-        BaseQualityControl qualityControl;
+        ModuleQualityControl qualityControl;
 
         /// <summary>
         /// What skill to use when performing the quality check. This is not always the same skill required to repair or maintain the part.
@@ -53,6 +53,8 @@ namespace WildBlueIndustries
         [KSPField(isPersistant = true)]
         public bool isBroken;
 
+        bool isMothballed;
+
         protected void debugLog(string message)
         {
             if (BARISScenario.showDebug == true)
@@ -71,11 +73,15 @@ namespace WildBlueIndustries
             qualityControl.onUpdateSettings -= onUpdateSettings;
             qualityControl.onPartBroken -= OnPartBroken;
             qualityControl.onPartFixed -= OnPartFixed;
+            qualityControl.onMothballStateChanged -= onMothballStateChanged;
             BARISScenario.Instance.onSasUpdate -= onRcsUpdate;
         }
 
         protected void onRcsUpdate(bool rcsActive)
         {
+            if (isMothballed)
+                return;
+
             if (isBroken)
             {
                 IsActive = false;
@@ -85,6 +91,19 @@ namespace WildBlueIndustries
             IsActive = rcsActive;
             qualityControl.UpdateActivationState();
             qualityControl.PerformQualityCheck();
+        }
+
+        public void onMothballStateChanged(bool isMothballed)
+        {
+            this.isMothballed = isMothballed;
+
+            bool enabledState = isMothballed;
+            if (!isMothballed && isBroken)
+                enabledState = false;
+            else if (!isMothballed)
+                enabledState = true;
+
+            rcsModule.moduleIsEnabled = enabledState;
         }
 
         #region ICanBreak
@@ -109,10 +128,11 @@ namespace WildBlueIndustries
         public void SubscribeToEvents(BaseQualityControl moduleQualityControl)
         {
             debugLog("SubscribeToEvents");
-            qualityControl = moduleQualityControl;
+            qualityControl = (ModuleQualityControl)moduleQualityControl;
             qualityControl.onUpdateSettings += onUpdateSettings;
             qualityControl.onPartBroken += OnPartBroken;
             qualityControl.onPartFixed += OnPartFixed;
+            qualityControl.onMothballStateChanged += onMothballStateChanged;
 
             //Handle persistence case for broken part.
             if (isBroken)
@@ -139,8 +159,6 @@ namespace WildBlueIndustries
 
             isBroken = true;
             rcsModule.moduleIsEnabled = true;
-            rcsModule.enabled = false;
-            rcsModule.isEnabled = false;
 
             if (this.part.vessel == FlightGlobals.ActiveVessel)
             {
@@ -154,9 +172,7 @@ namespace WildBlueIndustries
         public void OnPartFixed(BaseQualityControl moduleQualityControl)
         {
             isBroken = false;
-            rcsModule.enabled = true;
-            rcsModule.isEnabled = true;
-            rcsModule.moduleIsEnabled = false;
+            rcsModule.moduleIsEnabled = true;
         }
         #endregion
     }

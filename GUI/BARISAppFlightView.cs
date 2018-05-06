@@ -35,6 +35,7 @@ namespace WildBlueIndustries
         private GUILayoutOption[] buttonOptions = new GUILayoutOption[] { GUILayout.Height(24), GUILayout.Width(24) };
         private Vector2 originPoint = new Vector2(0, 0);
         private List<Vector2> partInfoScrollPositions = new List<Vector2>();
+        private bool showDebugOptions;
         static Texture wrenchIcon = null;
         int reliability = 0;
 
@@ -118,12 +119,96 @@ namespace WildBlueIndustries
         protected override void DrawWindowContents(int windowId)
         {
             if (BARISScenario.showDebug)
-                drawDebugButtons();
+            {
+                showDebugOptions = GUILayout.Toggle(showDebugOptions, "Show Debug Options");
+                if (showDebugOptions)
+                    drawDebugButtons();
+            }
+
+            //Mothball
+            drawMothballOptions();
 
             if (breakableParts == null)
                 return;
             if (breakableParts.Length > 0)
                 drawBreakableParts();
+        }
+
+        int lastCrewCount = -1;
+        int skillRank = 0;
+        bool canReactivate = false;
+        protected void drawMothballOptions()
+        {
+            if (FlightGlobals.ActiveVessel.isEVA)
+                return;
+
+            //Mothball: vessel must be landed or splashed
+            if (FlightGlobals.ActiveVessel.situation == Vessel.Situations.LANDED ||
+                FlightGlobals.ActiveVessel.situation == Vessel.Situations.SPLASHED ||
+                FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH)
+            {
+                //If not mothballed, then show mothball button.
+                if (!BARISScenario.Instance.IsMothballed(FlightGlobals.ActiveVessel))
+                {
+                    //Show mothball button
+                    if (GUILayout.Button("Mothball Vessel"))
+                        BARISScenario.Instance.MothballVessel(FlightGlobals.ActiveVessel);
+                }
+
+                //Show reactivate button and status.
+                else
+                {
+                    //Reactivation time remaining
+                    double timeRemaining = BARISScenario.Instance.GetReactivationTimeRemaining(FlightGlobals.ActiveVessel);
+                    if (timeRemaining > 0)
+                    {
+                        int crewCount = FlightGlobals.ActiveVessel.GetCrewCount();
+                        if (lastCrewCount != crewCount)
+                        {
+                            lastCrewCount = crewCount;
+
+                            //Highest ranking kerbal with the RepairSkill
+                            ProtoCrewMember astronaut = null;
+                            skillRank = BARISScenario.Instance.GetHighestRank(FlightGlobals.ActiveVessel, "RepairSkill", out astronaut);
+                            if (astronaut != null && skillRank >= 5)
+                                canReactivate = true;
+
+                        }
+                        //A high-ranking engineer can reactivate the vessel immediately
+                        if (canReactivate)
+                        {
+                            if (GUILayout.Button("Reactivate"))
+                                BARISScenario.Instance.ReactivateVessel(FlightGlobals.ActiveVessel);
+                        }
+                    }
+
+                    //Time's up, show the reactivate button
+                    else if (GUILayout.Button("Reactivate"))
+                    {
+                        BARISScenario.Instance.ReactivateVessel(FlightGlobals.ActiveVessel);
+                    }
+
+                    //Time remaining display
+                    double secondsPerDay = GameSettings.KERBIN_TIME == true ? 21600 : 86400;
+                    double daysRemaining = timeRemaining / secondsPerDay;
+                    string timeDisplay = string.Empty;
+                    if (timeRemaining == 0)
+                        timeDisplay = "<color=white><b>" + Localizer.Format(BARISScenario.kReactivateTime) + "</b>" + Localizer.Format(BARISScenario.BuildTimeLabelDone) + "</color>";
+                    else if (daysRemaining > 1)
+                        timeDisplay = "<color=white><b>" + Localizer.Format(BARISScenario.kReactivateTime) + "</b>" + string.Format("{0:f1}", daysRemaining) + Localizer.Format(BARISScenario.BuildTimeLabelDays) + "</color>";
+                    else if (daysRemaining == 1)
+                        timeDisplay = "<color=white><b>" + Localizer.Format(BARISScenario.kReactivateTime) + "</b>1" + Localizer.Format(BARISScenario.BuildTimeLabelOneDay) + "</color>";
+                    else
+                        timeDisplay = "<color=white><b>" + Localizer.Format(BARISScenario.kReactivateTime) + "</b>" + Localizer.Format(BARISScenario.BuildTimeLabelLessDay) + "</color>";
+
+                    //Can't reactivate immediately, tell the player
+                    if (!canReactivate && timeRemaining > 0)
+                        timeDisplay += BARISScenario.kNoReactivateEngineer;
+
+                    //Print status
+                    GUILayout.Label(timeDisplay);
+                }
+            }
         }
 
         protected void modifyPartQuality(int qualityModifier)

@@ -38,13 +38,15 @@ namespace WildBlueIndustries
         public string qualityCheckSkill = "RepairSkill";
 
         ModuleDataTransmitter transmitter;
-        BaseQualityControl qualityControl;
+        ModuleQualityControl qualityControl;
 
         /// <summary>
         /// Field to indicate that the part is broken. Used to disable the module after loading a saved game.
         /// </summary>
         [KSPField(isPersistant = true)]
         public bool isBroken;
+
+        bool isMothballed;
 
         protected void debugLog(string message)
         {
@@ -64,10 +66,29 @@ namespace WildBlueIndustries
             qualityControl.onUpdateSettings -= onUpdateSettings;
             qualityControl.onPartBroken -= OnPartBroken;
             qualityControl.onPartFixed -= OnPartFixed;
+            qualityControl.onMothballStateChanged -= onMothballStateChanged;
         }
 
         protected void onUpdateSettings(BaseQualityControl moduleQualityControl)
         {
+        }
+
+        public void onMothballStateChanged(bool isMothballed)
+        {
+            this.isMothballed = isMothballed;
+            transmitter = this.part.FindModuleImplementing<ModuleDataTransmitter>();
+
+            if (isMothballed)
+            {
+                transmitter.enabled = false;
+                transmitter.isEnabled = false;
+            }
+
+            else
+            {
+                transmitter.enabled = isBroken;
+                transmitter.isEnabled = isBroken;
+            }
         }
 
         #region ICanBreak
@@ -94,10 +115,11 @@ namespace WildBlueIndustries
         public void SubscribeToEvents(BaseQualityControl moduleQualityControl)
         {
             debugLog("SubscribeToEvents");
-            qualityControl = moduleQualityControl;
+            qualityControl = (ModuleQualityControl)moduleQualityControl;
             qualityControl.onUpdateSettings += onUpdateSettings;
             qualityControl.onPartBroken += OnPartBroken;
             qualityControl.onPartFixed += OnPartFixed;
+            qualityControl.onMothballStateChanged += onMothballStateChanged;
 
             //Handle persistence case for broken part.
             if (isBroken)

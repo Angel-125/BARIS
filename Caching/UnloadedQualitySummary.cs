@@ -277,10 +277,10 @@ namespace WildBlueIndustries
                 repairCostTime = BARISScenario.MinimumTigerTeamRepairDays;
 
             //Calculate the funding cost
-            repairCostFunds = repairCostTime * BARISScenario.MaxWorkersPerBay * BARISScenario.PayrollPerWorker;
+            repairCostFunds = repairCostTime * BARISScenario.MaxWorkersPerBay * BARISScenario.PayrollPerWorker * BARISScenario.RepairFactor;
 
             //Calculate the science cost
-            repairCostScience = (float)repairCostTime;
+            repairCostScience = (float)repairCostTime * BARISScenario.RepairFactor;
         }
 
         public bool IsBroken()

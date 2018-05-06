@@ -176,6 +176,11 @@ namespace WildBlueIndustries
         /// The EditorBayItem containing the last vessel that was launched. Used primarily when the player reverts to the editor.
         /// </summary>
         public static EditorBayItem launchedVesselBay;
+
+        /// <summary>
+        /// Multiplier for tiger team repair costs.
+        /// </summary>
+        public static float RepairFactor = 0.1f;
         #endregion
 
         #region TestBench
@@ -227,7 +232,7 @@ namespace WildBlueIndustries
         /// <summary>
         /// MTBF bonus for upgraded Research and Development. It is added to the part's MTBF using the following formula:
         /// Part MTBF * Facility Level (ranges from 0 to 1) * MTBFFacilityBonus
-        /// Ex: A part has 600 hours of MTBF, and R&D is at Level 2. The MTBF to add is: 600 * 0.5 * 0.25 = 75.
+        /// Ex: A part has 600 hours of MTBF, and RnD is at Level 2. The MTBF to add is: 600 * 0.5 * 0.25 = 75.
         /// The part's new MTBF is: 600 + 75 = 675.
         /// </summary>
         public static float MTBFFacilityBonus = 0.25f;
@@ -484,6 +489,10 @@ namespace WildBlueIndustries
         public static string TigerTeamNoFunds = "Can't afford to pay the Tiger Team.";
         public static string TigerTeamNoScience = "Not enough research available to the Tiger Team.";
         public static string TigerTeamNoComm = "No CommNet connection to the striken craft.";
+        public static string kMothballed = " is mothballed.";
+        public static string kReactivated = " has been reactivated.";
+        public static string kReactivateTime = "Reactivation in: ";
+        public static string kNoReactivateEngineer = "\r\n<color=white>Must wait or have experienced Engineer aboard to reactivate immediately.</color>";
         #endregion
 
         #region ToolTips
@@ -526,6 +535,7 @@ namespace WildBlueIndustries
         public List<BARISEventResult> cachedQualityModifiers = new List<BARISEventResult>();
         public int workPausedDays;
         public Dictionary<string, BARISRepairProject> repairProjects = new Dictionary<string, BARISRepairProject>();
+        public Dictionary<string, MothballedVessel> mothballedVessels = new Dictionary<string, MothballedVessel>();
 
         static string SoundsFolder = "WildBlueIndustries/000BARIS/Sounds/";
         static bool cachingInProgress;
@@ -674,6 +684,9 @@ namespace WildBlueIndustries
 
             //Repair project timers
             updateRepairProjects();
+
+            //Update Reactivation timers
+            updateReactivationTimers();
         }
 
         public override void OnLoad(ConfigNode node)
@@ -810,6 +823,18 @@ namespace WildBlueIndustries
                     repairProjects.Add(repairProject.vesselID, repairProject);
                 }
             }
+
+            if (node.HasValue("MothballedVessel"))
+            {
+                ConfigNode[] mothballedNodes = node.GetNodes("MothballedVessel");
+                MothballedVessel mothballedVessel;
+                foreach (ConfigNode mothballNode in mothballedNodes)
+                {
+                    mothballedVessel = new MothballedVessel();
+                    mothballedVessel.Load(mothballNode);
+                    mothballedVessels.Add(mothballedVessel.vesselName, mothballedVessel);
+                }
+            }
         }
 
         public override void OnSave(ConfigNode node)
@@ -874,6 +899,9 @@ namespace WildBlueIndustries
 
             foreach (BARISRepairProject repairProject in repairProjects.Values)
                 node.AddNode(repairProject.Save());
+
+            foreach (MothballedVessel mothballedVessel in mothballedVessels.Values)
+                node.AddNode(mothballedVessel.Save());
         }
 
         public void PlayModeUpdate(bool PartsCanBreak, bool RepairsRequireResources)
@@ -952,6 +980,8 @@ namespace WildBlueIndustries
                 loadedQualityCache.Remove(vessel);
             else if (nonBreakableVessels.Contains(vessel))
                 nonBreakableVessels.Remove(vessel);
+            if (mothballedVessels.ContainsKey(vessel.vesselName))
+                mothballedVessels.Remove(vessel.vesselName);
         }
 
         protected void onKSCFacilityUpgraded(UpgradeableFacility facility, int level)
@@ -1033,6 +1063,92 @@ namespace WildBlueIndustries
         #endregion
 
         #region API
+
+        #region Mothball
+        public bool IsMothballed(Vessel vessel)
+        {
+            return mothballedVessels.ContainsKey(vessel.vesselName);
+        }
+
+        public void MothballVessel(Vessel vessel)
+        {
+            if (IsMothballed(vessel))
+                return;
+
+            //Set all quality control modules to the mothballed state
+            List<ModuleQualityControl> qualityModules = vessel.FindPartModulesImplementing<ModuleQualityControl>();
+            int count = qualityModules.Count;
+            if (count == 0)
+                return;
+            for (int index = 0; index < count; index++)
+                qualityModules[index].SetMothballState(true);
+
+            //Unregister vessel from the loaded cache
+            if (loadedQualityCache.ContainsKey(vessel))
+                loadedQualityCache.Remove(vessel);
+
+            //Add to nonbreakables list
+            if (!nonBreakableVessels.Contains(vessel))
+                nonBreakableVessels.Add(vessel);
+
+            //Register the mothballed vessel
+            if (!mothballedVessels.ContainsKey(vessel.vesselName))
+            {
+                MothballedVessel mothballedVessel = new MothballedVessel(vessel);
+                mothballedVessels.Add(mothballedVessel.vesselName, mothballedVessel);
+            }
+
+            //Player message
+            ScreenMessages.PostScreenMessage(vessel.vesselName + kMothballed, MessageDuration);
+
+            //Save game
+            GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.BACKUP);
+        }
+
+        public double GetReactivationTimeRemaining(Vessel vessel)
+        {
+            if (!mothballedVessels.ContainsKey(vessel.vesselName))
+                return -1;
+
+            return mothballedVessels[vessel.vesselName].reactivationTimeRemaining;
+        }
+
+        public void ReactivateVessel(Vessel vessel)
+        {
+            //Make sure the vessel has been mothballed.
+            if (!IsMothballed(vessel))
+                return;
+
+            //Clear the mothball flag
+            List<ModuleQualityControl> qualityModules = vessel.FindPartModulesImplementing<ModuleQualityControl>();
+            int count = qualityModules.Count;
+            if (count == 0)
+                return;
+            for (int index = 0; index < count; index++)
+                qualityModules[index].SetMothballState(false);
+
+            //Unregister vessel from the reactivation list
+            if (mothballedVessels.ContainsKey(vessel.vesselName))
+                mothballedVessels.Remove(vessel.vesselName);
+
+            //Remove vessel from the nonbreakables list
+            if (nonBreakableVessels.Contains(vessel))
+                nonBreakableVessels.Remove(vessel);
+
+            //Player message
+            ScreenMessages.PostScreenMessage(vessel.vesselName + kReactivated, MessageDuration);
+        }
+
+        protected void updateReactivationTimers()
+        {
+            MothballedVessel[] vessels = mothballedVessels.Values.ToArray();
+            for (int index = 0; index < vessels.Length; index++)
+                vessels[index].UpdateTimer();
+        }
+
+        #endregion
+
+        #region Repair Project
         public BARISRepairProject GetRepairProject(Vessel unloadedVessel)
         {
             if (repairProjects.ContainsKey(unloadedVessel.id.ToString()))
@@ -1067,82 +1183,9 @@ namespace WildBlueIndustries
 
             repairProjects.Add(repairProject.vesselID, repairProject);
         }
+        #endregion
 
-        /// <summary>
-        /// Returns the maximum Mean Time Between Failures allowed for the part.
-        /// </summary>
-        /// <param name="mtbf">Base MTBF rating.</param>
-        /// <param name="mtbfCap">Local MTBF cap for the part.</param>
-        /// <param name="repairCount">How many times the part has been repaired</param>
-        /// <param name="mtbfRepairMultiplier">Multiplier for MTBF; applies when repairCount > 0.</param>
-        /// <param name="mtbfBonus">Bonus MTBF gained through flight experience.</param>
-        /// <returns>A double containing the max MTBF possible for the part.</returns>
-        public static double GetMaxMTBF(double mtbf, double mtbfCap, int repairCount, float mtbfRepairMultiplier, double mtbfBonus)
-        {
-            double maxMTBF = mtbf + mtbfBonus;
-
-            //Apply the MTBF cap
-            if (BARISSettingsLaunch.LaunchesCanFail)
-            {
-                //If the part overrides the global cap, then use the part's cap.
-                if (maxMTBF > mtbfCap && mtbfCap > -1)
-                    maxMTBF = mtbfCap;
-
-                //Apply the global quality cap if needed.
-                else if (maxMTBF > BARISScenario.MTBFCap)
-                    maxMTBF = BARISScenario.MTBFCap;
-            }
-
-            else
-            {
-                maxMTBF = BARISScenario.MTBFCap;
-            }
-
-            //Reduce max mtbf
-            if (BARISSettings.PartsWearOut && repairCount > 0)
-                maxMTBF *= (mtbfRepairMultiplier * repairCount);
-
-            return maxMTBF;
-        }
-
-        /// <summary>
-        /// Returns the maximum possibly quality rating of the part.
-        /// </summary>
-        /// <param name="quality">Base quality rating of the part.</param>
-        /// <param name="integrationBonus">Bonus quality from part vehicle integration.</param>
-        /// <param name="flightExperienceBonus">Bonus quality from flight experience.</param>
-        /// <param name="qualityCap">Per-part quality cap</param>
-        /// <param name="repairCount">Number of times the part has been repaired.</param>
-        /// <returns>An int containing the max quality rating possible for the part.</returns>
-        public static int GetMaxQuality(int quality, int integrationBonus, int flightExperienceBonus, int qualityCap, int repairCount)
-        {
-            //Initial value depends upon the base quality rating, the bonus for time spent in a vehicle integration facility, and the flight experience.
-            int maxQuality = quality + integrationBonus + flightExperienceBonus;
-
-            //Apply the quality cap
-            if (BARISSettingsLaunch.LaunchesCanFail)
-            {
-                //If the part overrides the global quality cap, then use the part's quality cap.
-                if (maxQuality > qualityCap && qualityCap > -1)
-                    maxQuality = qualityCap;
-
-                //Apply the global quality cap if needed.
-                else if (maxQuality > BARISSettings.QualityCap)
-                    maxQuality = BARISSettings.QualityCap;
-            }
-
-            else
-            {
-                maxQuality = BARISSettings.QualityCap;
-            }
-
-            //Adjust for the number of times the part has been repaired.
-            if (BARISSettings.PartsWearOut)
-                maxQuality = maxQuality - (repairCount * BARISScenario.QualityLossPerRepairs);
-
-            return maxQuality;
-        }
-
+        #region Event Cards
         /// <summary>
         /// Plays an event card that's been drawn from the deck. This is exposed for debugging purposes.
         /// </summary>
@@ -1158,7 +1201,9 @@ namespace WildBlueIndustries
             if (!string.IsNullOrEmpty(cardView.description))
                 cardView.SetVisible(true);
         }
+        #endregion
 
+        #region Integration
         /// <summary>
         /// Tells all editor bays to recalcuate their flight bonuses.
         /// </summary>
@@ -1635,7 +1680,9 @@ namespace WildBlueIndustries
             else
                 editorBayItems.Add(key, bayItem);
         }
+        #endregion
 
+        #region Sounds
         /// <summary>
         /// Plays the "Houston we've had a problem" sound in reverse.
         /// </summary>
@@ -1676,6 +1723,74 @@ namespace WildBlueIndustries
                 themeSong.volume = GameSettings.SHIP_VOLUME;
             }
             themeSong.Play();
+        }
+        #endregion
+
+        #region Quality
+        /// <summary>
+        /// Returns the maximum Mean Time Between Failures allowed for the part.
+        /// </summary>
+        /// <param name="mtbf">Base MTBF rating.</param>
+        /// <param name="mtbfCap">Local MTBF cap for the part.</param>
+        /// <param name="repairCount">How many times the part has been repaired</param>
+        /// <param name="mtbfRepairMultiplier">Multiplier for MTBF; applies when repairCount > 0.</param>
+        /// <param name="mtbfBonus">Bonus MTBF gained through flight experience.</param>
+        /// <returns>A double containing the max MTBF possible for the part.</returns>
+        public static double GetMaxMTBF(double mtbf, double mtbfCap, int repairCount, float mtbfRepairMultiplier, double mtbfBonus)
+        {
+            double maxMTBF = mtbf + mtbfBonus;
+
+            //Apply the MTBF cap
+            if (BARISSettingsLaunch.LaunchesCanFail)
+            {
+                //If the part overrides the global cap, then use the part's cap.
+                if (maxMTBF > mtbfCap && mtbfCap > -1)
+                    maxMTBF = mtbfCap;
+
+                //Apply the global quality cap if needed.
+                else if (maxMTBF > BARISScenario.MTBFCap)
+                    maxMTBF = BARISScenario.MTBFCap;
+            }
+
+            else
+            {
+                maxMTBF = BARISScenario.MTBFCap;
+            }
+
+            //Reduce max mtbf
+            if (BARISSettings.PartsWearOut && repairCount > 0)
+                maxMTBF *= (mtbfRepairMultiplier * repairCount);
+
+            return maxMTBF;
+        }
+
+        /// <summary>
+        /// Returns the maximum possibly quality rating of the part.
+        /// </summary>
+        /// <param name="quality">Base quality rating of the part.</param>
+        /// <param name="integrationBonus">Bonus quality from part vehicle integration.</param>
+        /// <param name="flightExperienceBonus">Bonus quality from flight experience.</param>
+        /// <param name="qualityCap">Per-part quality cap</param>
+        /// <param name="repairCount">Number of times the part has been repaired.</param>
+        /// <returns>An int containing the max quality rating possible for the part.</returns>
+        public static int GetMaxQuality(int quality, int integrationBonus, int flightExperienceBonus, int qualityCap, int repairCount)
+        {
+            //Initial value depends upon the base quality rating, the bonus for time spent in a vehicle integration facility, and the flight experience.
+            int maxQuality = quality + integrationBonus + flightExperienceBonus;
+
+            //If the part overrides the global quality cap, then use the part's quality cap.
+            if (maxQuality > qualityCap && qualityCap > -1)
+                maxQuality = qualityCap;
+
+            //Apply the global quality cap if needed.
+            else if ((maxQuality > BARISSettings.QualityCap) || !BARISSettingsLaunch.VesselsNeedIntegration)
+                maxQuality = BARISSettings.QualityCap;
+
+            //Adjust for the number of times the part has been repaired.
+            if (BARISSettings.PartsWearOut)
+                maxQuality = maxQuality - (repairCount * BARISScenario.QualityLossPerRepairs);
+
+            return maxQuality;
         }
 
         /// <summary>
@@ -1795,7 +1910,7 @@ namespace WildBlueIndustries
         }
 
         /// <summary>
-        /// Returns the Mean Time Between Failures bonus for the supplied part type. It is based upon flight experience & facility bonus
+        /// Returns the Mean Time Between Failures bonus for the supplied part type. It is based upon flight experience and facility bonus
         /// </summary>
         /// <param name="part">A Part to check for MTBF bonus.</param>
         /// <returns>A double with the bonus hours.</returns>
@@ -1805,7 +1920,7 @@ namespace WildBlueIndustries
         }
 
         /// <summary>
-        /// Returns the Mean Time Between Failures bonus for the supplied part type. It is based upon flight experience & facility bonus
+        /// Returns the Mean Time Between Failures bonus for the supplied part type. It is based upon flight experience and facility bonus
         /// </summary>
         /// <param name="partTitle">A string naming the part type to check for MTBF bonus.</param>
         /// <returns>A double with the bonus hours.</returns>
@@ -2276,7 +2391,9 @@ namespace WildBlueIndustries
             if (HighLogic.LoadedSceneIsFlight)
                 FlightLogger.fetch.LogEvent(message);
         }
+        #endregion
 
+        #region KAC
         /// <summary>
         /// Sets or updates the Kerbal Alarm Clock alarm for the editor bay
         /// </summary>
@@ -2303,7 +2420,12 @@ namespace WildBlueIndustries
 
             //Calculate the base build time
             double secondsPerDay = GameSettings.KERBIN_TIME == true ? 21600 : 86400;
-            int buildTimeDays = Mathf.RoundToInt(editorBayItem.totalIntegrationToAdd / BARISScenario.Instance.GetWorkerProductivity(editorBayItem.workerCount, editorBayItem.isVAB));
+            int workerCount = editorBayItem.workerCount;
+            //If we have no workers then assume at least one worker so we don't get divide by zero errors.
+            //The time to completion will get updated when more workers are added.
+            if (workerCount <= 0)
+                workerCount = 1;
+            int buildTimeDays = Mathf.RoundToInt(editorBayItem.totalIntegrationToAdd / BARISScenario.Instance.GetWorkerProductivity(workerCount, editorBayItem.isVAB));
             double buildTimeSeconds = buildTimeDays * secondsPerDay;
 
             //Account for time already spent.
@@ -2318,6 +2440,8 @@ namespace WildBlueIndustries
             buildTimeSeconds += Planetarium.GetUniversalTime();
             editorBayItem.KACAlarmID = KACWrapper.KAC.CreateAlarm(KACWrapper.KACAPI.AlarmTypeEnum.Raw, editorBayItem.vesselName + BARISScenario.IntegrationCompletedKACAlarm, buildTimeSeconds);
         }
+        #endregion
+
         #endregion
 
         #region coroutines
@@ -2435,21 +2559,23 @@ namespace WildBlueIndustries
                         }
                         break;
                 }
-
-                //Show the vessel switch dialog, but only if there's at least one vessel that has a problem and it isn't the active vessel.
-                if (focusVesselView.flightGlobalIndexes.Count > 0)
-                    focusVesselView.SetVisible(true);
-
-                //Play sound effect
-                if (vesselHadAProblem)
-                {
-                    PlayProblemSoundReversed();
-                    vesselHadAProblem = false;
-                }
-
                 //Get ready to process the next vessel
                 yield return new WaitForFixedUpdate();
             }
+
+            //Show the vessel switch dialog, but only if there's at least one vessel that has a problem and it isn't the active vessel.
+            if (focusVesselView.flightGlobalIndexes.Count > 0)
+                focusVesselView.SetVisible(true);
+
+            //Play sound effect
+            if (vesselHadAProblem)
+            {
+                PlayProblemSoundReversed();
+                vesselHadAProblem = false;
+            }
+
+            //Get ready to process the next vessel
+            yield return new WaitForFixedUpdate();
         }
 
         public IEnumerator<YieldInstruction> PerformQualityCheckLoaded(int timewarpPenalty = 0)
@@ -2863,6 +2989,10 @@ namespace WildBlueIndustries
             if (nonBreakableVessels.Contains(vessel))
                 return null;
 
+            //If the vessel is mothballed, then we're done.
+            if (IsMothballed(vessel))
+                return null;
+
             //Check the cache to see if we have it there.
             if (loadedQualityCache.ContainsKey(vessel))
             {
@@ -2955,6 +3085,13 @@ namespace WildBlueIndustries
             //and found no quality modules, then we're done.
             if (nonBreakableVessels.Contains(vessel))
                 return null;
+
+            //If the vessel is mothballed, then we're done.
+            if (IsMothballed(vessel))
+            {
+                debugLog("Skipping " + vessel.vesselName + ", it is mothballed.");
+                return null;
+            }
 
             //Check the cache to see if we have it there.
             if (unloadedQualityCache.ContainsKey(vessel))

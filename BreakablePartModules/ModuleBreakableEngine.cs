@@ -74,7 +74,7 @@ namespace WildBlueIndustries
         bool[] throttleLocked;
         ModuleQualityControl qualityControl;
         bool partsCanBreak = true;
-
+        bool isMothballed;
         #region API
 
         /// <summary>
@@ -303,10 +303,18 @@ namespace WildBlueIndustries
         public override void OnUpdate()
         {
             base.OnUpdate();
+
+            //If we're mothballed then shut the engine down.
+            bool isRunning = EngineIsRunning;
+            if (isMothballed && isRunning)
+            {
+                engine.Shutdown();
+                engine.currentThrottle = 0;
+            }
+
             if (!partsCanBreak)
                 return;
 
-            bool isRunning = EngineIsRunning;
             if (isRunning != wasRunning)
             {
                 wasRunning = isRunning;
@@ -346,6 +354,7 @@ namespace WildBlueIndustries
             qualityControl.onUpdateSettings += onUpdateSettings;
             qualityControl.onPartBroken += OnPartBroken;
             qualityControl.onPartFixed += OnPartFixed;
+            qualityControl.onMothballStateChanged += onMothballStateChanged;
             BARISScenario.Instance.onThrottleUpDown += onThrottleUpDown;
 
             if (BARISScenario.showDebug && qualityControl.guiVisible)
@@ -365,6 +374,11 @@ namespace WildBlueIndustries
             Events["GenerateFailureMode"].guiActive = BARISScenario.showDebug;
 
             partsCanBreak = BARISScenario.partsCanBreak;
+        }
+
+        public void onMothballStateChanged(bool isMothballed)
+        {
+            this.isMothballed = isMothballed;
         }
 
         public void OnPartFixed(BaseQualityControl moduleQualityControl)

@@ -6,9 +6,9 @@ using UnityEngine;
 using KSP.IO;
 using FinePrint;
 using KSP.UI.Screens;
-#if !KSP122
 using KSP.Localization;
-#endif
+//using Expansions;
+//using Expansions.Missions.Adjusters;
 
 /*
 Source code copyrighgt 2017, by Michael Billard (Angel-125)
@@ -240,6 +240,58 @@ namespace WildBlueIndustries
         #endregion
 
         #region API
+        #region Mothball
+        public override void SetMothballState(bool mothballState)
+        {
+            base.SetMothballState(mothballState);
+
+            //Unsubscribe events if needed.
+            if (isMothballed && !mothballState)
+            {
+                GameEvents.onPartResourceEmptyNonempty.Remove(onPartResourceEmptyNonempty);
+            }
+
+            //Go through mothball procedures
+            int count = 0;
+            if (isMothballed)
+            {
+                //Drain all resources
+                count = this.part.Resources.Count;
+                for (int index = 0; index < count; index++)
+                    this.part.Resources[index].amount = 0.0f;
+
+                //Make sure they stay drained.
+                GameEvents.onPartResourceEmptyNonempty.Add(onPartResourceEmptyNonempty);
+
+                //Disable GUI
+                if (IsBroken)
+                    Events["RepairPart"].active = false;
+                if (currentMTBF <= 0)
+                    Events["PerformMaintenance"].active = false;
+            }
+
+            //Go through reactivation procedures
+            else
+            {
+                //Setup GUI
+                SetupGUI(guiVisible);
+            }
+        }
+
+        public void onPartResourceEmptyNonempty(PartResource partResource)
+        {
+            if (partResource.part != this.part)
+                return;
+            if (!isMothballed)
+                return;
+
+            //Drain all resources
+            int count = this.part.Resources.Count;
+            for (int index = 0; index < count; index++)
+                this.part.Resources[index].amount = 0.0f;
+        }
+        #endregion
+
         public override void GetQualityStats(out int Quality, out int CurrentQuality, out double MTBF, out double CurrentMTBF)
         {
             Quality = this.quality;
@@ -628,7 +680,7 @@ namespace WildBlueIndustries
         }
 
         /// <summary>
-        /// This method returns the maximum possible MTBF that the part can have. It is based upon the part's MTBF rating, R&D facility bonus, and its flight experience, and capped to the max value allowed.
+        /// This method returns the maximum possible MTBF that the part can have. It is based upon the part's MTBF rating, RnD facility bonus, and its flight experience, and capped to the max value allowed.
         /// </summary>
         /// <returns>A double containing the maximum MTBF</returns>
         public double GetMaxMTBF()
@@ -1118,6 +1170,9 @@ namespace WildBlueIndustries
             if (breakableModuleCount == -1)
                 breakableModuleCount = breakableParts.Count;
 
+            //Set mothball state
+            SetMothballState(isMothballed);
+
             //Now go through and build the skill list
             StringBuilder sb = new StringBuilder();
             foreach (string skill in requiredSkills)
@@ -1155,6 +1210,8 @@ namespace WildBlueIndustries
         public virtual void Destroy()
         {
             GameEvents.OnGameSettingsApplied.Remove(UpdateSettings);
+            if (isMothballed)
+                GameEvents.onPartResourceEmptyNonempty.Remove(onPartResourceEmptyNonempty);
 
             if (monitorConverters)
                 BARISScenario.Instance.onTimeTickEvent -= monitorConvertersTimeTick;

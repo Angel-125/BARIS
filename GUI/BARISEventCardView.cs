@@ -32,7 +32,6 @@ namespace WildBlueIndustries
         public string imagePath = string.Empty;
 
         private Texture2D image = null;
-        private Vector2 scrollPos;
         private GUILayoutOption[] scrollViewOptions = new GUILayoutOption[] { GUILayout.Width(DialogWidth) };
 
         public BARISEventCardView() :

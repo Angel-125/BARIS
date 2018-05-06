@@ -38,6 +38,7 @@ namespace WildBlueIndustries
         private GUILayoutOption[] infoPanelOptionsBroken = new GUILayoutOption[] { GUILayout.Height(InfoPanelHeightBroken) };
         private GUILayoutOption[] buttonOptions = new GUILayoutOption[] { GUILayout.Height(24), GUILayout.Width(24) };
         private Vector2 originPoint = new Vector2(0, 0);
+        UnloadedQualitySummary[] unloadedQualityCache;
 
         public BARISAppTrackingView() :
         base("Blah", DialogWidth, DialogHeight)
@@ -61,6 +62,43 @@ namespace WildBlueIndustries
 
             if (newValue)
             {
+                unloadedQualityCache = BARISScenario.Instance.unloadedQualityCache.Values.ToArray();
+
+                //Build the cache if needed.
+                UnloadedQualitySummary qualitySummary;
+                if (unloadedQualityCache.Length == 0)
+                {
+                    debugLog("No unloaded quality cache, rebuilding...");
+                    Vessel[] unloadedVessels = FlightGlobals.VesselsUnloaded.ToArray();
+                    bool createdNewRecord;
+                    List<UnloadedQualitySummary> cache = new List<UnloadedQualitySummary>();
+                    for (int index = 0; index < unloadedVessels.Length; index++)
+                    {
+                        //Skip vessels marked as debris.
+                        if (!BARISUtils.IsFilterEnabled(unloadedVessels[index]))
+                            continue;
+
+                        //Skip mothballed vessels
+                        qualitySummary = BARISScenario.Instance.GetUnloadedQualitySummary(unloadedVessels[index], out createdNewRecord);
+                        if (qualitySummary != null)
+                            cache.Add(qualitySummary);
+                    }
+                    unloadedQualityCache = cache.ToArray();
+                }
+
+                //Update the summary
+                for (int index = 0; index < unloadedQualityCache.Length; index++)
+                {
+                    //Get the summary info.
+                    qualitySummary = unloadedQualityCache[index];
+
+                    //Skip vessels marked as debris.
+                    if (!BARISUtils.IsFilterEnabled(qualitySummary.vessel))
+                        continue;
+
+                    qualitySummary.UpdateAndGetFailureCandidates(0);
+                }
+
                 //Game events
                 BARISScenario.Instance.onQualityCheck += onQualityCheck;
             }
@@ -77,7 +115,7 @@ namespace WildBlueIndustries
 
         protected void registerRepairProject(UnloadedQualitySummary qualitySummary)
         {
-            //Show tooltip: The repair attempt might not suceed!
+            //Show tooltip: The repair attempt might not succeed!
             if (!BARISScenario.showedRepairProjectTip && BARISScenario.partsCanBreak)
             {
                 BARISScenario.showedRepairProjectTip = true;
@@ -110,31 +148,25 @@ namespace WildBlueIndustries
 
         protected void drawVesselSummary()
         {
-            Vessel[] unloadedVessels = FlightGlobals.VesselsUnloaded.ToArray();
             UnloadedQualitySummary qualitySummary;
-            bool createdNewRecord;
 
             scrollPos = GUILayout.BeginScrollView(scrollPos, scrollViewOptions);
 
-            for (int index = 0; index < unloadedVessels.Length; index++)
+            for (int index = 0; index < unloadedQualityCache.Length; index++)
             {
                 //Get the summary info.
-                qualitySummary = BARISScenario.Instance.GetUnloadedQualitySummary(unloadedVessels[index], out createdNewRecord);
-                if (qualitySummary == null)
-                    continue;
+                qualitySummary = unloadedQualityCache[index];
+
                 //Skip vessels marked as debris.
                 if (!BARISUtils.IsFilterEnabled(qualitySummary.vessel))
                     continue;
                 
-                //Update the summary
-                qualitySummary.UpdateAndGetFailureCandidates(0);
-
                 if (qualitySummary.IsBroken())
                 {
                     GUILayout.BeginScrollView(originPoint, infoPanelOptionsBroken);
 
                     //Vessel name & reliability
-                    GUILayout.Label("<color=white><b>" + unloadedVessels[index].vesselName + "</b></color>");
+                    GUILayout.Label("<color=white><b>" + qualitySummary.vessel.vesselName + "</b></color>");
                     GUILayout.Label("<color=white><b>" + BARISScenario.ConditionLabel + "</b> " + BARISScenario.RepairTimeBroken + "</color>");
                     drawTigerTeamRepairs(qualitySummary);
 
@@ -146,7 +178,7 @@ namespace WildBlueIndustries
                     GUILayout.BeginScrollView(originPoint, infoPanelOptions);
 
                     //Vessel name & reliability
-                    GUILayout.Label("<color=white><b>" + unloadedVessels[index].vesselName + "</b></color>");
+                    GUILayout.Label("<color=white><b>" + qualitySummary.vessel.vesselName + "</b></color>");
                     GUILayout.Label("<color=white><b>" + BARISScenario.ReliabilityLabel + "</b> " + qualitySummary.reliability + "%</color>");
 
                     GUILayout.EndScrollView();

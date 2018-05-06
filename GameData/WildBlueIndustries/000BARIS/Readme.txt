@@ -16,6 +16,22 @@ NOTE: ModuleManager is REQUIRED.
 
 ---REVISION HISTORY---
 
+1.6
+- You can now mothball vessels that are landed or splashed. Mothballing a vessel means that it'll be drained of all resources (and will dump any resources transfered to it) and all its breakable part modules will disable functionality as if broken. However, the vessel will retain its quality and MTBF ratings, and it won't be checked for quality updates. When you mothball a vessel, it can be reactivated, but it takes one day per metric ton of vessel. A highly skilled kerbal with the RepairSkill can reactivate a mothballed vessel immediately. You can mothball a vessel from BARIS's in-flight screen.
+- Fixed thumbnail images not showing up in the editor.
+- Renamed file snapshots so that the save folder doesn't get clogged with vessel snapshots.
+- Made sure that the vessel snapshots are cleared when the editor bay is cleared.
+- Fixed issues with Rush job when Kerbal Alarm Clock is installed.
+- Fixed divide by zero error when adding a new vessel to integrate into an editor bay, and the bay has no workers.
+- Fixed issue with the problem report GUI where it kept showing up repeatedly even after dismissing it.
+- Fixed initial quality issue when vehicle required integration but launch failures aren't enabled.
+- Improved GUI rendering in the Tracking Station view.
+- Reduced funding and science costs of tiger teams attempting to repair a vessel in flight from the Tracking Station.
+- Recompiled for KSP 1.4.3
+
+1.5.0
+- Recompiled for KSP 1.4.1
+
 1.4.9
 - Added 0-workers and max-workers buttons to the Space Center hiring screen and High bay/hangar bay views.
 - Adding/removing workers won't happen at a glacial pace any more.
