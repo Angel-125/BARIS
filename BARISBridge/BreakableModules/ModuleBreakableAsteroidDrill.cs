@@ -32,6 +32,12 @@ namespace WildBlueIndustries
     public class ModuleBreakableAsteroidDrill : ModuleAsteroidDrill, ICanBreak
     {
         /// <summary>
+        /// Name of the effect to play when the drill is running.
+        /// </summary>
+        [KSPField]
+        public string runningEffect = string.Empty;
+
+        /// <summary>
         /// Flag to indicate that the part module is broken. If broken, then it can't be declared broken again by the ModuleQualityControl.
         /// </summary>
         [KSPField(isPersistant = true)]
@@ -190,6 +196,12 @@ namespace WildBlueIndustries
             {
                 Events["StartConverter"].guiActive = true;
                 Events["StartConverter"].guiActiveUnfocused = true;
+            }
+
+            if (HighLogic.LoadedSceneIsFlight)
+            {
+                float powerLevel = IsActivated == true ? 1.0f : 0.0f;
+                this.part.Effect(runningEffect, powerLevel);
             }
         }
 

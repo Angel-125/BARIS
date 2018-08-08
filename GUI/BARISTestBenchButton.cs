@@ -27,10 +27,11 @@ namespace WildBlueIndustries
     {
         static public Texture2D appIcon = null;
         static protected ApplicationLauncherButton appLauncherButton = null;
-        static TestBenchView testBenchView = new TestBenchView();
+        static TestBenchView testBenchView;
 
         public void Awake()
         {
+            testBenchView = new TestBenchView();
             appIcon = GameDatabase.Instance.GetTexture("WildBlueIndustries/000BARIS/Icons/TestBenchIcon", false);
             GameEvents.onGUIApplicationLauncherReady.Add(SetupGUI);
         }

@@ -16,6 +16,9 @@ NOTE: ModuleManager is REQUIRED.
 
 ---REVISION HISTORY---
 
+1.6.1
+- Bug fixes
+
 1.6
 - You can now mothball vessels that are landed or splashed. Mothballing a vessel means that it'll be drained of all resources (and will dump any resources transfered to it) and all its breakable part modules will disable functionality as if broken. However, the vessel will retain its quality and MTBF ratings, and it won't be checked for quality updates. When you mothball a vessel, it can be reactivated, but it takes one day per metric ton of vessel. A highly skilled kerbal with the RepairSkill can reactivate a mothballed vessel immediately. You can mothball a vessel from BARIS's in-flight screen.
 - Fixed thumbnail images not showing up in the editor.

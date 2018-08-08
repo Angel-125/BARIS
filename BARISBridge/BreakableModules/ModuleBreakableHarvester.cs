@@ -32,6 +32,12 @@ namespace WildBlueIndustries
     public class ModuleBreakableHarvester : ModuleResourceHarvester, ICanBreak
     {
         /// <summary>
+        /// Name of the effect to play when the drill is running.
+        /// </summary>
+        [KSPField]
+        public string runningEffect = string.Empty;
+
+        /// <summary>
         /// What skill to use when performing the quality check. This is not always the same skill required to repair or maintain the part.
         /// </summary>
         [KSPField()]
@@ -192,6 +198,12 @@ namespace WildBlueIndustries
                 Events["StartConverter"].guiActive = true;
                 Events["StartConverter"].guiActiveUnfocused = true;
             }
+
+            if (HighLogic.LoadedSceneIsFlight)
+            {
+                float powerLevel = IsActivated == true ? 1.0f : 0.0f;
+                this.part.Effect(runningEffect, powerLevel);
+            }
         }
 
         protected override void PostProcess(ConverterResults result, double deltaTime)
@@ -201,7 +213,9 @@ namespace WildBlueIndustries
             if (HighLogic.LoadedSceneIsFlight == false)
                 return;
             if (IsActivated == false)
+            {
                 return;
+            }
             if (qualityControl == null)
                 return;
             if (isBroken || isMothballed)

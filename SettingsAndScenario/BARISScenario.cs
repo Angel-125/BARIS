@@ -550,7 +550,7 @@ namespace WildBlueIndustries
         int checksPerDay = 3;
         int timewarpModifier = 0;
         int skippedChecks = 0;
-        BARISFocusVesselView focusVesselView = new BARISFocusVesselView();
+        BARISFocusVesselView focusVesselView;
         bool displayedInstructions = false;
         bool vesselHadAProblem;
         static bool sasWasActive;
@@ -564,13 +564,15 @@ namespace WildBlueIndustries
         double eventCardStartTime = 0;
         bool eventCardsEnabled = false;
         int eventCardFrequency = 0;
-        VesselsCompletedView completedVesselsView = new VesselsCompletedView();
+        VesselsCompletedView completedVesselsView;
         double qualityCheckInterval;
         bool ignoreAlarmDelete;
 
         internal void Start()
         {
             debugLog("Start called");
+            focusVesselView = new BARISFocusVesselView();
+            completedVesselsView = new VesselsCompletedView();
 
             //Init the KAC Wrapper. KAC Wrapper courtey of TriggerAu
             KACWrapper.InitKACWrapper();

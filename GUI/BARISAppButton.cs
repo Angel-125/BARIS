@@ -25,13 +25,13 @@ namespace WildBlueIndustries
     [KSPAddon(KSPAddon.Startup.EveryScene, false)]
     public class BARISAppButton : MonoBehaviour
     {
-        static public BARISAppFlightView flightAppView = new BARISAppFlightView();
-        static public BARISAppTrackingView trackingAppView = new BARISAppTrackingView();
-        static public BARISAppCenterView centerAppView = new BARISAppCenterView();
-        static public BARISInstructions instructionsView = new BARISInstructions();
-        static public BARISEditorView editorView = new BARISEditorView();
-        static public VehicleIntegrationStatusView vehicleIntegrationStatusView = new VehicleIntegrationStatusView();
-        static public KCTEditorView kctEditorView = new KCTEditorView();
+        static public BARISAppFlightView flightAppView;
+        static public BARISAppTrackingView trackingAppView;
+        static public BARISAppCenterView centerAppView;
+        static public BARISInstructions instructionsView;
+        static public BARISEditorView editorView;
+        static public VehicleIntegrationStatusView vehicleIntegrationStatusView;
+        static public KCTEditorView kctEditorView;
         static public Texture2D appIcon = null;
 
         static protected ApplicationLauncherButton appLauncherButton = null;

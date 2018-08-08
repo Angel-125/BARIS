@@ -49,7 +49,7 @@ namespace WildBlueIndustries
         /// </summary>
         public static bool bypassPartMismatch = false;
 
-        private BARISGenericMessageView messageView = new BARISGenericMessageView();
+        private BARISGenericMessageView messageView;
         static bool errorMessageShown = false;
         private bool clearedIntegrationBonus = false;
         private bool isVAB = true;
@@ -66,6 +66,9 @@ namespace WildBlueIndustries
                 return;
             debugLog("Awake called");
             Instance = this;
+
+            //Create views
+            messageView = new BARISGenericMessageView();
 
             //Are we in VAB or SPH?
             if (EditorLogic.fetch.ship.shipFacility == EditorFacility.VAB)

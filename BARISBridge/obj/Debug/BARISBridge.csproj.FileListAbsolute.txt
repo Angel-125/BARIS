@@ -22,8 +22,10 @@ C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\xmldoc2md.xsl
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\RunMDSeparator.bat
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\RunPowershell.bat
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\xmldoc2md.ps1
+C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\xmldoc2md.XML
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\BARISBridge.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\BARISBridge.pdb
-C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\obj\Debug\BARISBridge.csprojResolveAssemblyReference.cache
+C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\obj\Debug\BARISBridge.csproj.CoreCompileInputs.cache
+C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\obj\Debug\BARISBridge.csproj.CopyComplete
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\obj\Debug\BARISBridge.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\obj\Debug\BARISBridge.pdb
