@@ -181,10 +181,14 @@ namespace WildBlueIndustries
                 if (windowPos.Contains(mousePosition))
                 {
                     InputLockManager.SetControlLock(ControlTypes.All, "WindowLock" + this.windowId);
+                    if (HighLogic.LoadedSceneIsEditor)
+                        EditorLogic.fetch.Lock(true, true, true, "WindowLock" + this.windowId);
                 }
                 else
                 {
                     InputLockManager.SetControlLock(ControlTypes.None, "WindowLock" + this.windowId);
+                    if (HighLogic.LoadedSceneIsEditor)
+                        EditorLogic.fetch.Unlock("WindowLock" + this.windowId);
                 }
             }
         }

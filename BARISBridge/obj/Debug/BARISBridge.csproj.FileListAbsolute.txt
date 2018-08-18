@@ -29,3 +29,4 @@ C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\obj\Debug\BARISBridge.cspro
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\obj\Debug\BARISBridge.csproj.CopyComplete
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\obj\Debug\BARISBridge.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\obj\Debug\BARISBridge.pdb
+C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\obj\Debug\BARISBridge.csprojAssemblyReference.cache

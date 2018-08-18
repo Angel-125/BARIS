@@ -16,6 +16,12 @@ NOTE: ModuleManager is REQUIRED.
 
 ---REVISION HISTORY---
 
+1.6.3
+- Bug fixes
+
+1.6.2
+- Bug Fixes
+
 1.6.1
 - Bug fixes
 
