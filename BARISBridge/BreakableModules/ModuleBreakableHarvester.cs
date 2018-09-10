@@ -82,9 +82,12 @@ namespace WildBlueIndustries
 
             //Start the converter
             StartResourceConverter();
-            qualityControl.UpdateActivationState();
-            if (BARISBridge.DrillsCanFail)
-                qualityControl.PerformQualityCheck();
+            if (qualityControl != null)
+            {
+                qualityControl.UpdateActivationState();
+                if (BARISBridge.DrillsCanFail)
+                    qualityControl.PerformQualityCheck();
+            }
         }
 
         [KSPAction()]
@@ -185,6 +188,10 @@ namespace WildBlueIndustries
         public override void OnUpdate()
         {
             base.OnUpdate();
+            if (!HighLogic.LoadedSceneIsFlight)
+                return;
+            if (!this.isEnabled)
+                return;
 
             //Always hide the start resource converter button
             Events["StartResourceConverter"].active = false;
