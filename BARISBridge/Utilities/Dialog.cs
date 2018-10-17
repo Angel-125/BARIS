@@ -46,7 +46,7 @@ namespace WildBlueIndustries
         private int windowId;
         private string configNodeName;
         private bool mouseDown;
-        private bool visible;
+        protected bool visible;
 
         protected GUIStyle closeButtonStyle;
         private GUIStyle resizeStyle;

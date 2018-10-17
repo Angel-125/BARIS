@@ -68,9 +68,12 @@ namespace WildBlueIndustries
             }
 
             //Start the converter
-            qualityControl.UpdateActivationState();
-            if (BARISBridge.ConvertersCanFail)
-                qualityControl.PerformQualityCheck();
+            if (qualityControl != null)
+            {
+                qualityControl.UpdateActivationState();
+                if (BARISBridge.ConvertersCanFail)
+                    qualityControl.PerformQualityCheck();
+            }
         }
 
         public override void StopResourceConverter()

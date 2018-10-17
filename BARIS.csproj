@@ -134,7 +134,13 @@
 xcopy /Y "$(TargetPath)" "C:\KSPDev\GameData\WildBlueIndustries\000BARIS\"﻿
 xcopy /Y "$(TargetDir)$(TargetName).pdb" "C:\KSPDev\GameData\WildBlueIndustries\000BARIS\"
 xcopy /Y "$(TargetDir)$(TargetName).dll.mdb" "C:\KSPDev\GameData\WildBlueIndustries\000BARIS\"
-xcopy /Y "$(TargetDir)$(TargetName).dll" "C:\KSPDev\GameData\WildBlueIndustries\000BARIS\"</PostBuildEvent>
+xcopy /Y "$(TargetDir)$(TargetName).dll" "C:\KSPDev\GameData\WildBlueIndustries\000BARIS\"
+
+xcopy /Y /E  "C:\KSPDev\GameData\WildBlueIndustries\000BARIS\*.*" "C:\Projects\KSP\WildBlueIndustries\BARIS\GameData\WildBlueIndustries\000BARIS\"
+xcopy /Y /E  "C:\KSPDev\GameData\WildBlueIndustries\000ABARISBridgeDoNotDelete\*.*" "C:\Projects\KSP\WildBlueIndustries\BARIS\GameData\WildBlueIndustries\000ABARISBridgeDoNotDelete\"
+xcopy /Y /E  "C:\KSPDev\GameData\WildBlueIndustries\000BARIS\BARIS.version" "C:\Projects\KSP\WildBlueIndustries\BARIS\Notes\"
+
+del "C:\Projects\KSP\WildBlueIndustries\BARIS\GameData\WildBlueIndustries\000BARIS\MiniAVC.xml"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -469,6 +469,9 @@ namespace WildBlueIndustries
         [KSPEvent(guiName = "Declare Broken")]
         public override void DeclarePartBroken()
         {
+            if (!BARISSettings.PartsCanBreak)
+                return;
+
             //Make sure that quality is updated
             currentQuality = 0;
             UpdateQualityDisplay(BARISScenario.GetConditionSummary(0, 0, 0, 0));
