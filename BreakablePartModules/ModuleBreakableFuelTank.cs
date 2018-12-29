@@ -49,6 +49,9 @@ namespace WildBlueIndustries
         [KSPField()]
         public string largeLeakMessage;
 
+        [KSPField]
+        public string resourceBlacklist = "Ablator; SolidFuel;SRMFuel";
+
         /// <summary>
         /// What skill to use when performing the quality check. This is not always the same skill required to repair or maintain the part.
         /// </summary>
@@ -93,6 +96,10 @@ namespace WildBlueIndustries
 
             for (int index = 0; index < this.part.Resources.Count; index++)
             {
+                //Ignore any resource on our blacklist
+                if (resourceBlacklist.Contains(this.part.Resources[index].resourceName))
+                    continue;
+
                 if (this.part.Resources[index].flowState)
                 {
                     return true;

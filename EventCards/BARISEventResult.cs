@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using KSP.IO;
+using KSP.UI;
 #if !KSP122
 using KSP.Localization;
 #endif
@@ -123,6 +124,10 @@ namespace WildBlueIndustries
                 case BARISEventTypes.workerPayIncrease:
                     message = payWorkersMore();
                     break;
+
+                case BARISEventTypes.astronautRetires:
+                    message = applyAstronautRetires();
+                    break;
             }
             return message;
         }
@@ -140,6 +145,7 @@ namespace WildBlueIndustries
             {
                 //Only applies if astronauts can be killed, and we have at least one non-vet astronaut.
                 case BARISEventTypes.astronautStatusChange:
+                case BARISEventTypes.astronautRetires:
                     isValid = BARISSettingsLaunch.AstronautsCanBeKilled;
                     if (isValid)
                     {
@@ -277,6 +283,11 @@ namespace WildBlueIndustries
 
                 case "facilityDestroyed":
                     validNode = loadFacilityDestroyedResult(resultNode);
+                    break;
+
+                case "astronautRetires":
+                    eventType = BARISEventTypes.astronautRetires;
+                    validNode = true;
                     break;
 
                 case "custom":
@@ -550,6 +561,34 @@ namespace WildBlueIndustries
             return true;
         }
 
+        protected virtual string applyAstronautRetires()
+        {
+            string message = string.Empty;
+            KerbalRoster roster = HighLogic.CurrentGame.CrewRoster;
+            ProtoCrewMember[] crewRoster = roster.Crew.ToArray();
+            ProtoCrewMember astronaut = null;
+            int randomIndex = 0;
+
+            //Keep looking until we find an available astronaut that isn't a vet.
+            for (int index = 0; index < crewRoster.Length; index++)
+            {
+                randomIndex = UnityEngine.Random.Range(0, crewRoster.Length - 1);
+                astronaut = crewRoster[randomIndex];
+
+                if (astronaut.rosterStatus == ProtoCrewMember.RosterStatus.Available && !astronaut.veteran)
+                {
+                    //Remove astronaut from roster
+                    roster.Remove(astronaut.name);
+
+                    //Inform player
+                    message = astronaut.name + Localizer.Format(BARISScenario.StatusRetiredMsg);
+                    break;
+                }
+            }
+
+            return message;
+        }
+
         protected string applyStatusChange()
         {
             KerbalRoster roster = HighLogic.CurrentGame.CrewRoster;
@@ -582,6 +621,7 @@ namespace WildBlueIndustries
                         break;
 
                     case BARISStatusTypes.missing:
+//                        CrewAssignmentDialog.Instance.RefreshCrewLists() See Crew R&R mod
                         if (astronaut.rosterStatus == ProtoCrewMember.RosterStatus.Available && !astronaut.veteran)
                         {
                             astronaut.rosterStatus = ProtoCrewMember.RosterStatus.Missing;

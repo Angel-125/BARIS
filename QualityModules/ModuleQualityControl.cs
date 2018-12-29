@@ -412,9 +412,12 @@ namespace WildBlueIndustries
                     {
                         message = qualityResult.astronaut.name + Localizer.Format(BARISScenario.QualityCheckFailAvertedAstronaut1) + this.part.partInfo.title +
                             Localizer.Format(BARISScenario.QualityCheckFailAvertedAstronaut2);
-                        BARISScenario.Instance.LogPlayerMessage(message);
+                        if (BARISSettings.LogAstronautAvertMsg)
+                            BARISScenario.Instance.LogPlayerMessage(message);
+                        else
+                            FlightLogger.fetch.LogEvent(message);
                     }
-                   break;
+                    break;
 
                 case QualityCheckStatus.eventCardAverted:
                     break;
@@ -782,7 +785,10 @@ namespace WildBlueIndustries
                     {
                         message = qualityResult.astronaut.name + Localizer.Format(BARISScenario.QualityCheckFailAvertedAstronaut1) + this.part.partInfo.title +
                             Localizer.Format(BARISScenario.QualityCheckFailAvertedAstronaut2);
-                        BARISScenario.Instance.LogPlayerMessage(message);
+                        if (BARISSettings.LogAstronautAvertMsg)
+                            BARISScenario.Instance.LogPlayerMessage(message);
+                        else
+                            FlightLogger.fetch.LogEvent(message);
                     }
                     break;
 
@@ -1297,8 +1303,19 @@ namespace WildBlueIndustries
                 //MTBF bonus
                 mtbfBonus = BARISScenario.Instance.GetMTBFBonus(this.part, mtbf);
 
-                currentQuality = MaxQuality;
-                currentMTBF = MaxMTBF;
+                //Set current quality and MTBF
+                //In the editor we set the base values if vessel needs integration.
+                //In flight we use the max possible values.
+                if (HighLogic.LoadedSceneIsEditor && BARISSettingsLaunch.VesselsNeedIntegration)
+                {
+                    currentQuality = quality;
+                    currentMTBF = mtbf;
+                }
+                else
+                {
+                    currentQuality = MaxQuality;
+                    currentMTBF = MaxMTBF;
+                }
             }
 
             //KLUDGE! Part upgrades increase MTBF but don't get registered in the editor.

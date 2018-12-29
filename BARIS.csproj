@@ -81,6 +81,7 @@
     <Compile Include="LaunchFailure\ModuleEscapePod.cs" />
     <Compile Include="LaunchFailure\ModuleLESEngine.cs" />
     <Compile Include="Caching\MothballedVessel.cs" />
+    <Compile Include="BreakablePartModules\ModuleBreakableParachute.cs" />
     <Compile Include="Robonaut\ModuleRobonautExperimentManager.cs" />
     <Compile Include="Robonaut\ModuleRobonautPackChute.cs" />
     <Compile Include="Robonaut\ModuleRobonaut.cs" />
@@ -136,8 +137,6 @@ xcopy /Y "$(TargetDir)$(TargetName).pdb" "C:\KSPDev\GameData\WildBlueIndustries\
 xcopy /Y "$(TargetDir)$(TargetName).dll.mdb" "C:\KSPDev\GameData\WildBlueIndustries\000BARIS\"
 xcopy /Y "$(TargetDir)$(TargetName).dll" "C:\KSPDev\GameData\WildBlueIndustries\000BARIS\"
 
-xcopy /Y /E  "C:\KSPDev\GameData\WildBlueIndustries\000BARIS\*.*" "C:\Projects\KSP\WildBlueIndustries\BARIS\GameData\WildBlueIndustries\000BARIS\"
-xcopy /Y /E  "C:\KSPDev\GameData\WildBlueIndustries\000ABARISBridgeDoNotDelete\*.*" "C:\Projects\KSP\WildBlueIndustries\BARIS\GameData\WildBlueIndustries\000ABARISBridgeDoNotDelete\"
 xcopy /Y /E  "C:\KSPDev\GameData\WildBlueIndustries\000BARIS\BARIS.version" "C:\Projects\KSP\WildBlueIndustries\BARIS\Notes\"
 
 del "C:\Projects\KSP\WildBlueIndustries\BARIS\GameData\WildBlueIndustries\000BARIS\MiniAVC.xml"</PostBuildEvent>

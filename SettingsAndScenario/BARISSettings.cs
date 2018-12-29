@@ -58,16 +58,37 @@ namespace WildBlueIndustries
         [GameParameters.CustomParameterUI("Email maintenance requests", toolTip = "Send an in-game email when parts need maintenance.", autoPersistance = true)]
         public bool emailMaintenanceRequests = true;
 
-        [GameParameters.CustomParameterUI("Email repair requests", toolTip = "Send an in-game email when parts need repairs.", autoPersistance = true)]
+        [GameParameters.CustomParameterUI("Email part repair requests", toolTip = "Send an in-game email when parts need repairs.", autoPersistance = true)]
         public bool emailRepairRequests = true;
 
-        [GameParameters.CustomParameterUI("Kill Timewarp when parts break", toolTip = "If a part suffers a break during timewarp, kill the timewarp.", autoPersistance = true)]
+        [GameParameters.CustomParameterUI("Email vessel repair requests", toolTip = "Send an in-game email when vessels need repairs.", autoPersistance = true)]
+        public bool emailVesselRepairRequests = true;
+
+        [GameParameters.CustomParameterUI("Email part repair requests", toolTip = "Send an in-game email when parts need repairs.", autoPersistance = true)]
+        public bool logAstronautAvertMsg = true;
+
+        [GameParameters.CustomParameterUI("Report astronaut skill checks", toolTip = "If an astronaut saves the day, tell me.", autoPersistance = true)]
         public bool killTimewarpOnBreak = true;
 
         [GameParameters.CustomParameterUI("Debug mode enabled", toolTip = "Lots of logging and debug options.", autoPersistance = true)]
         public bool debugMode = false;
 
         #region Properties
+        public static bool LogAstronautAvertMsg
+        {
+            get
+            {
+                BARISSettings settings = HighLogic.CurrentGame.Parameters.CustomParams<BARISSettings>();
+                return settings.logAstronautAvertMsg;
+            }
+
+            set
+            {
+                BARISSettings settings = HighLogic.CurrentGame.Parameters.CustomParams<BARISSettings>();
+                settings.logAstronautAvertMsg = value;
+            }
+        }
+
         public static bool KillTimewarpOnBreak
         {
             get
@@ -155,6 +176,21 @@ namespace WildBlueIndustries
             {
                 BARISSettings settings = HighLogic.CurrentGame.Parameters.CustomParams<BARISSettings>();
                 settings.emailRepairRequests = value;
+            }
+        }
+
+        public static bool EmailVesselRepairRequests
+        {
+            get
+            {
+                BARISSettings settings = HighLogic.CurrentGame.Parameters.CustomParams<BARISSettings>();
+                return settings.emailVesselRepairRequests;
+            }
+
+            set
+            {
+                BARISSettings settings = HighLogic.CurrentGame.Parameters.CustomParams<BARISSettings>();
+                settings.emailVesselRepairRequests = value;
             }
         }
 

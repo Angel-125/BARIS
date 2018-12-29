@@ -47,6 +47,9 @@ namespace WildBlueIndustries
         [GameParameters.CustomParameterUI("Should transmitters fail?", toolTip = "Transmitters can stop transmitting.", autoPersistance = true)]
         public bool transmittersCanFail = true;
 
+        [GameParameters.CustomParameterUI("Should parachutes fail?", toolTip = "Parachutes can fail to deploy.", autoPersistance = true)]
+        public bool parachutesCanFail = true;
+
         [GameParameters.CustomParameterUI("Can failed parts explode?", toolTip = "Failed parts can explode during launches or during post-launch critical failures.", autoPersistance = true)]
         public bool failuresCanExplode = false;
 
@@ -57,6 +60,21 @@ namespace WildBlueIndustries
         public int explosivePotentialCritical = 1;
 
         #region Properties
+        public static bool ParachutesCanFail
+        {
+            get
+            {
+                BARISBreakableParts settings = HighLogic.CurrentGame.Parameters.CustomParams<BARISBreakableParts>();
+                return settings.parachutesCanFail;
+            }
+
+            set
+            {
+                BARISBreakableParts settings = HighLogic.CurrentGame.Parameters.CustomParams<BARISBreakableParts>();
+                settings.parachutesCanFail = value;
+            }
+        }
+
         public static bool CommandPodsCanFail
         {
             get

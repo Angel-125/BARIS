@@ -49,7 +49,8 @@ namespace WildBlueIndustries
         workerPayIncrease,
         qualityCheck,
         facilityDestroyed,
-        custom
+        custom,
+        astronautRetires
     }
 
     public enum BARISEventCurrencyTypes

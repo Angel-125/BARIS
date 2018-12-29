@@ -351,8 +351,13 @@ namespace WildBlueIndustries
         public static float MessageDuration = 8.0f;
         public static string SkillListOr = " or ";
         public static string FromVessel = "From: ";
+        public static string FromMissionControlSystems = "From: Mission Control - SYSTEMS";
         public static string MsgTitleMaintenance = " Needs Maintenance";
         public static string MsgTitleRepair = " Needs Repairs";
+        public static string MsgTitleVesselRepairs = "Vessels need repairs";
+        public static string MsgBodyVesselRepairs = "Flight, Systems. Be advised, my engineering board indicates that the following vessels have developed a problem and need repairs:";
+        public static string MsgBodyTigerTeamRepairs = "FYI - You can form a Tiger Team from the Tracking Station to try and try to resolve the problem from the ground.";
+        public static string MsgBodyVesselCheckStatus = "Recommend that you check on vessel status to confirm their condition and effect repairs.";
         public static string SubjectMaintenance = "Subject: Maintenance Request";
         public static string SubjectRepair = "Subject: Repair Request";
         public static string InsufficientRepairSkill = "Insufficient skill to repair the ";
@@ -454,6 +459,7 @@ namespace WildBlueIndustries
         public static string WorkPausedMsg2 = " days";
         public static string StatusBadassMsg = " is now a BadS.";
         public static string StatusMissingMsg = " has gone missing!";
+        public static string StatusRetiredMsg = " has retired.";
         public static string StatusDeadMsg = " is dead!";
         public static string StatusRecruitedMsg = " has joined the team.";
         public static string BuildingDestroyedMsg = " has been destroyed!";
@@ -493,6 +499,7 @@ namespace WildBlueIndustries
         public static string kReactivated = " has been reactivated.";
         public static string kReactivateTime = "Reactivation in: ";
         public static string kNoReactivateEngineer = "\r\n<color=white>Must wait or have experienced Engineer aboard to reactivate immediately.</color>";
+        public static string kMaxQualityReached = " has reached maximum possible quality.";
         #endregion
 
         #region ToolTips
@@ -514,7 +521,8 @@ namespace WildBlueIndustries
         public static string BuyExpWithScienceMsg = "<color=white>Scientists and engineers report that by spending <b>Science</b> and/or <b>Funds</b> you can simulate launch conditions to gain <b>Flight Experience</b> and improve vessel <b>Reliability.</b></color>";
         public static string BuyExpWithScienceToolTipImagePath = "WildBlueIndustries/000BARIS/Images/ScienceThis";
 
-        public static bool showedRepairProjectTip = false;
+        public static bool showedRepairProjectTip = false; //Used for event cards
+        public static bool showedTigerTeamToolTip = false; //Used for email repair requests.
         public static string RepairProjectTitle = "Tiger Teams";
         public static string RepairProjectMsg = "<color=white>Attempting to fix failures on the ground costs time, money, and science, and <b>isn't guaranteed to work.</b> But you can make many repair attempts. If the vessel develops another problem while repairs are in progress, the current efforts will be lost and spent currencies returned.</color>";
         public static string RepairProjectImagePath = "WildBlueIndustries/000BARIS/Icons/Wrench";
@@ -813,6 +821,8 @@ namespace WildBlueIndustries
                 showedBuyExperienceWithScienceTip = bool.Parse(node.GetValue("showedBuyExperienceWithScienceTip"));
             if (node.HasValue("showedRepairProjectTip"))
                 showedRepairProjectTip = bool.Parse(node.GetValue("showedRepairProjectTip"));
+            if (node.HasValue("showedTigerTeamToolTip"))
+                showedTigerTeamToolTip = bool.Parse(node.GetValue("showedTigerTeamToolTip"));
 
             if (node.HasValue("BARISRepairProject"))
             {
@@ -898,6 +908,8 @@ namespace WildBlueIndustries
                 node.AddValue("showedBuyExperienceWithScienceTip", showedBuyExperienceWithScienceTip);
             if (showedRepairProjectTip)
                 node.AddValue("showedRepairProjectTip", showedRepairProjectTip);
+            if (showedTigerTeamToolTip)
+                node.AddValue("showedTigerTeamToolTip", showedTigerTeamToolTip);
 
             foreach (BARISRepairProject repairProject in repairProjects.Values)
                 node.AddNode(repairProject.Save());
@@ -2567,7 +2579,12 @@ namespace WildBlueIndustries
 
             //Show the vessel switch dialog, but only if there's at least one vessel that has a problem and it isn't the active vessel.
             if (focusVesselView.flightGlobalIndexes.Count > 0)
-                focusVesselView.SetVisible(true);
+            {
+                if (!BARISSettings.EmailVesselRepairRequests)
+                    focusVesselView.SetVisible(true);
+                else
+                    emailVesselRepairsRequest();
+            }
 
             //Play sound effect
             if (vesselHadAProblem)
@@ -2733,6 +2750,39 @@ namespace WildBlueIndustries
         #endregion
 
         #region Helpers
+        protected void emailVesselRepairsRequest()
+        {
+            string[] vesselNames = focusVesselView.vesselNames.ToArray();
+
+            StringBuilder resultsMessage = new StringBuilder();
+            MessageSystem.Message msg;
+
+            resultsMessage.AppendLine(Localizer.Format(BARISScenario.FromMissionControlSystems));
+            resultsMessage.AppendLine(Localizer.Format(BARISScenario.SubjectRepair));
+            resultsMessage.AppendLine(" ");
+            resultsMessage.AppendLine(Localizer.Format(BARISScenario.MsgBodyVesselRepairs));
+            resultsMessage.AppendLine(" ");
+
+            for (int index = 0; index < vesselNames.Length; index++)
+                resultsMessage.AppendLine(vesselNames[index]);
+            resultsMessage.AppendLine(" ");
+
+            resultsMessage.AppendLine(Localizer.Format(BARISScenario.MsgBodyVesselCheckStatus));
+
+            //Tiger team tool tip
+            if (!BARISScenario.showedTigerTeamToolTip)
+            {
+                BARISScenario.showedTigerTeamToolTip = true;
+                resultsMessage.AppendLine(" ");
+                resultsMessage.AppendLine(Localizer.Format(BARISScenario.MsgBodyTigerTeamRepairs));
+                resultsMessage.AppendLine(" ");
+            }
+
+            msg = new MessageSystem.Message(Localizer.Format(BARISScenario.MsgTitleVesselRepairs), resultsMessage.ToString(),
+                MessageSystemButton.MessageButtonColor.RED, MessageSystemButton.ButtonIcons.FAIL);
+            MessageSystem.Instance.AddMessage(msg);
+        }
+
         protected void updateRepairProjects()
         {
             string[] keys = repairProjects.Keys.ToArray();

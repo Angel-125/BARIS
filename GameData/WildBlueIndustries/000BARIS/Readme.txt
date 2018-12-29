@@ -16,6 +16,19 @@ NOTE: ModuleManager is REQUIRED.
 
 ---REVISION HISTORY---
 
+1.8.0
+- The Mk1 LES can now fail.
+- Parachutes can now fail to deploy and might be cut loose in the event of a part failure.
+- Recompiled for KSP 1.6
+- Bug fixes.
+
+1.7.0
+- New setting: Email vessel repair requests - Instead of interrupting your game with a popup containing a list of broken vessels, email you the list instead.
+- New setting: Report astronaut skill checks - Turns on/off the screen messages telling you when an astronaut's skill saved the day.
+- Added blacklist to resources that can't leak. Ablator, SolidFuel, and SRMFuel are on that list.
+- Removed Astronaut On Vacation event card since it kills astronauts. it will be revisited later.
+- Reduced explosion potential of parts that explode during launch failures.
+
 1.6.5
 - Minor fixes
 

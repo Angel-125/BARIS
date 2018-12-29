@@ -168,6 +168,31 @@ namespace WildBlueIndustries
             yield return null;
         }
 
+        public void CheckChutes()
+        {
+            Vessel vessel = FlightGlobals.ActiveVessel;
+
+            //Get the vessel cache
+            bool createdNewRecord = false;
+            LoadedQualitySummary qualitySummary = BARISScenario.Instance.GetLoadedQualitySummary(vessel, out createdNewRecord);
+            if (qualitySummary == null)
+                return;
+
+            //Get failure candidates
+            ModuleQualityControl[] failureCandidates = qualitySummary.GetStagingFailureCandidates(stagingID);
+            List<ModuleBreakableParachute> parachutes;
+            int count;
+            for (int index = 0; index < failureCandidates.Length; index++)
+            {
+                parachutes = failureCandidates[index].part.FindModulesImplementing<ModuleBreakableParachute>();
+                count = parachutes.Count;
+                for (int chuteIndex = 0; chuteIndex < count; chuteIndex++)
+                {
+                    parachutes[chuteIndex].isStaged = true;
+                }
+            }
+        }
+
         /// <summary>
         /// This method performs the staging reliability check. If successful, then all parts in the stage may contribute to their type of part's flight experience.
         /// If it fails, then one or more parts in the stage may fail regardless of their MTBF rating. If it critically fails, the vessel blows up.
@@ -335,6 +360,7 @@ namespace WildBlueIndustries
                                 {
                                     message = qualityControl.part.partInfo.title + Localizer.Format(BARISScenario.CatastrophicFailure);
                                     BARISScenario.Instance.LogPlayerMessage(message);
+                                    qualityControl.part.explosionPotential = 0.01f;
                                     qualityControl.part.explode();
                                 }
                             }
@@ -362,7 +388,10 @@ namespace WildBlueIndustries
                     if (qualitySummary.rankingAstronaut != null)
                     {
                         message = qualitySummary.rankingAstronaut.name + Localizer.Format(BARISScenario.QualityCheckFailAvertedAstronaut3);
-                        BARISScenario.Instance.LogPlayerMessage(message);
+                        if (BARISSettings.LogAstronautAvertMsg)
+                            BARISScenario.Instance.LogPlayerMessage(message);
+                        else
+                            FlightLogger.fetch.LogEvent(message);
                     }
                     break;
 
@@ -517,6 +546,9 @@ namespace WildBlueIndustries
 
             //Subscribe to the timetick event
             BARISScenario.Instance.onTimeTickEvent += stagingTimeTick;
+
+            //Chutes need to be checked at staging event
+            CheckChutes();
         }
 
         protected void onStageSeparation(EventReport report)

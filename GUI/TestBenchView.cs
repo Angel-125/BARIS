@@ -217,15 +217,30 @@ namespace WildBlueIndustries
                 //Get the part title
                 partTitle = qualityControlModules[index].part.partInfo.title;
 
-                //Record the flight experience.
-                BARISScenario.Instance.RecordFlightExperience(qualityControlModules[index].part, BARISSettingsLaunch.FlightsPerQualityBonus * experienceModifier);
-
-                //Calculate the new quality rating.
+                //Don't exceed max quality.
                 int totalQuality = qualityControlModules[index].quality + BARISScenario.Instance.GetFlightBonus(qualityControlModules[index].part);
-                string message = partTitle + " " + BARISScenario.QualityLabel + totalQuality;
+                string message = "";
+                if (totalQuality + experienceModifier <= BARISSettings.QualityCap)
+                {
+                    //Record the flight experience.
+                    BARISScenario.Instance.RecordFlightExperience(qualityControlModules[index].part, BARISSettingsLaunch.FlightsPerQualityBonus * experienceModifier);
 
-                //Inform the user.
-                ScreenMessages.PostScreenMessage(message, BARISScenario.MessageDuration, ScreenMessageStyle.UPPER_CENTER);
+                    //Calculate the new quality rating.
+                    totalQuality = qualityControlModules[index].quality + BARISScenario.Instance.GetFlightBonus(qualityControlModules[index].part);
+                    message = partTitle + " " + BARISScenario.QualityLabel + totalQuality;
+
+                    //Inform the user.
+                    ScreenMessages.PostScreenMessage(message, BARISScenario.MessageDuration, ScreenMessageStyle.UPPER_CENTER);
+                }
+
+                else
+                {
+                    //Max quality reached.
+                    message = partTitle + Localizer.Format(BARISScenario.kMaxQualityReached);
+
+                    //Inform the user.
+                    ScreenMessages.PostScreenMessage(message, BARISScenario.MessageDuration, ScreenMessageStyle.UPPER_CENTER);
+                }
             }
 
             //Don't forget to update the editor bays
@@ -250,6 +265,7 @@ namespace WildBlueIndustries
 
             fundsCost = 0;
             flightLog.Clear();
+            int maxedQualityPartCount = 0;
             for (int index = 0; index < qualityControlModules.Length; index++)
             {
                 //Get quality control module.
@@ -272,7 +288,10 @@ namespace WildBlueIndustries
                 totalMaxQuality += baseQuality + integrationCap;
 
                 //Cost
-                fundsCost += qualityControl.part.partInfo.cost / 4;
+                if (baseQuality < BARISSettings.QualityCap)
+                    fundsCost += qualityControl.part.partInfo.cost / 4;
+                else
+                    maxedQualityPartCount += 1;
             }
 
             //Now that we have a predicted flight log, we can look at quality after integration.
@@ -296,6 +315,10 @@ namespace WildBlueIndustries
                 reliability = 0;
                 maxReliability = 0;
             }
+            if (reliability > BARISSettings.QualityCap)
+                reliability = BARISSettings.QualityCap;
+            if (maxReliability > BARISSettings.QualityCap)
+                maxReliability = BARISSettings.QualityCap;
 
             //Calculate reliability: after testing
             reliabilityAfter = Mathf.RoundToInt(((float)(totalQualityAfter) / (float)totalMaxReliability) * 100.0f);
@@ -305,13 +328,16 @@ namespace WildBlueIndustries
                 reliabilityAfter = 0;
                 maxReliabilityAfter = 0;
             }
+            if (reliabilityAfter > BARISSettings.QualityCap)
+                reliabilityAfter = BARISSettings.QualityCap;
+            if (maxReliabilityAfter > BARISSettings.QualityCap)
+                maxReliabilityAfter = BARISSettings.QualityCap;
 
             //Adjust funds cost.
             fundsCost *= BARISSettingsLaunch.MultiplierPerExpBonus;
 
             //Get science cost
-            scienceCost = BARISSettingsLaunch.FlightsPerQualityBonus * qualityControlModules.Length;
-
+            scienceCost = BARISSettingsLaunch.FlightsPerQualityBonus * (qualityControlModules.Length - maxedQualityPartCount);
         }
     }
 }
