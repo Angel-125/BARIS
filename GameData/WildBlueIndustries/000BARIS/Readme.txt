@@ -16,6 +16,9 @@ NOTE: ModuleManager is REQUIRED.
 
 ---REVISION HISTORY---
 
+1.8.1
+- Bug fixes
+
 1.8.0
 - The Mk1 LES can now fail.
 - Parachutes can now fail to deploy and might be cut loose in the event of a part failure.

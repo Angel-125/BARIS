@@ -669,7 +669,7 @@ namespace WildBlueIndustries
                 newRecruit.flightLog.AddEntry("Flight,Kerbin");
                 newRecruit.flightLog.AddEntry("Suborbit,Kerbin");
                 newRecruit.flightLog.AddEntry("Orbit,Kerbin");
-                newRecruit.flightLog.AddEntry("Land,Kerbin");
+                newRecruit.flightLog.AddEntry("Landed,Kerbin");
                 newRecruit.flightLog.AddEntry("Recover");
                 newRecruit.ArchiveFlightLog();
             }
@@ -682,11 +682,11 @@ namespace WildBlueIndustries
                 newRecruit.flightLog.AddEntry("Orbit,Kerbin");
                 newRecruit.flightLog.AddEntry("Flyby,Mun");
                 newRecruit.flightLog.AddEntry("Orbit,Mun");
-                newRecruit.flightLog.AddEntry("Land,Mun");
+                newRecruit.flightLog.AddEntry("Landed,Mun");
                 newRecruit.flightLog.AddEntry("Flyby,Minmus");
                 newRecruit.flightLog.AddEntry("Orbit,Minmus");
-                newRecruit.flightLog.AddEntry("Land,Minmus");
-                newRecruit.flightLog.AddEntry("Land,Kerbin");
+                newRecruit.flightLog.AddEntry("Landed,Minmus");
+                newRecruit.flightLog.AddEntry("Landed,Kerbin");
                 newRecruit.flightLog.AddEntry("Recover");
                 newRecruit.ArchiveFlightLog();
             }
@@ -699,15 +699,15 @@ namespace WildBlueIndustries
                 newRecruit.flightLog.AddEntry("Orbit,Kerbin");
                 newRecruit.flightLog.AddEntry("Flyby,Mun");
                 newRecruit.flightLog.AddEntry("Orbit,Mun");
-                newRecruit.flightLog.AddEntry("Land,Mun");
+                newRecruit.flightLog.AddEntry("Landed,Mun");
                 newRecruit.flightLog.AddEntry("PlantFlag,Mun");
                 newRecruit.flightLog.AddEntry("Flyby,Minmus");
                 newRecruit.flightLog.AddEntry("Orbit,Minmus");
-                newRecruit.flightLog.AddEntry("Land,Minmus");
+                newRecruit.flightLog.AddEntry("Landed,Minmus");
                 newRecruit.flightLog.AddEntry("PlantFlag,Minmus");
                 newRecruit.flightLog.AddEntry("Orbit,Minmus");
                 newRecruit.flightLog.AddEntry("Orbit,Sun");
-                newRecruit.flightLog.AddEntry("Land,Kerbin");
+                newRecruit.flightLog.AddEntry("Landed,Kerbin");
                 newRecruit.flightLog.AddEntry("Recover");
                 newRecruit.ArchiveFlightLog();
             }

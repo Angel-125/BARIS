@@ -79,7 +79,8 @@ namespace WildBlueIndustries
         public override void StopResourceConverter()
         {
             base.StopResourceConverter();
-            qualityControl.UpdateActivationState();
+            if (qualityControl != null)
+                qualityControl.UpdateActivationState();
         }
 
         public virtual void SetGuiVisible(bool isVisible)
