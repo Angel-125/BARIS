@@ -16,6 +16,10 @@ NOTE: ModuleManager is REQUIRED.
 
 ---REVISION HISTORY---
 
+1.8.2
+- Fixed event cards that shouldn't appear when Kerbal Construction Time is installed.
+- Fixed vehicle integration button in space center view being shown when Kerbal Construction Time is installed.
+
 1.8.1
 - Bug fixes
 

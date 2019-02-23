@@ -302,15 +302,17 @@ namespace WildBlueIndustries
                 GUILayout.EndHorizontal();
             }
 
-            GUILayout.BeginHorizontal();
-            //Vehicle Integration Status
-            if (GUILayout.Button(Localizer.Format(BARISScenario.EditorViewTitle)))
+            if (!BARISScenario.isKCTInstalled)
             {
-                BARISAppButton.vehicleIntegrationStatusView.SetVisible(true);
-                SetVisible(false);
+                GUILayout.BeginHorizontal();
+                //Vehicle Integration Status
+                if (GUILayout.Button(Localizer.Format(BARISScenario.EditorViewTitle)))
+                {
+                    BARISAppButton.vehicleIntegrationStatusView.SetVisible(true);
+                    SetVisible(false);
+                }
+                GUILayout.EndHorizontal();
             }
-
-            GUILayout.EndHorizontal();
 
             GUILayout.EndVertical();
         }
