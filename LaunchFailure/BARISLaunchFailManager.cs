@@ -99,6 +99,7 @@ namespace WildBlueIndustries
 
         protected List<ModuleQualityControl> doomed = new List<ModuleQualityControl>();
         protected int launchEscapeBase = 45;
+        protected SnacksWrapper snacksWrapper = new SnacksWrapper();
 
         protected void debugLog(string message)
         {
@@ -122,7 +123,7 @@ namespace WildBlueIndustries
             }
         }
 
-        public void Destroy()
+        public void OnDestroy()
         {
             GameEvents.onStageActivate.Remove(onStageActivate);
             GameEvents.onStageSeparation.Remove(onStageSeparation);
@@ -213,6 +214,8 @@ namespace WildBlueIndustries
             //Stage check flag
             stageCheckInProgress = true;
 
+            disableTestModeIfNeeded();
+
             //Debug stuff
             if (BARISScenario.showDebug)
             {
@@ -263,8 +266,7 @@ namespace WildBlueIndustries
                     if (failureCandidates != null)
                     {
                         //Fire the catastrophic failure event to give others a chance to avert disaster somehow.
-                        if (onStagingCriticalFailure != null)
-                            onStagingCriticalFailure();
+                        onStagingCriticalFailure?.Invoke();
                         if (criticalFailureAverted)
                         {
                             //Reset the flag
@@ -273,6 +275,10 @@ namespace WildBlueIndustries
                         }
 
                         //Ok we're go for vessel destruction!
+
+                        //Cause stress. Lots of it.
+                        snacksWrapper.AddStressToCrew(vessel, BARISStressCategories.stressCategoryHigh);
+
                         //Inform player of cascade failure
                         message = vessel.vesselName + Localizer.Format(BARISScenario.CascadeFailureMsg);
                         BARISScenario.Instance.LogPlayerMessage(message);
@@ -336,6 +342,9 @@ namespace WildBlueIndustries
                         int expGainTarget = BARISSettingsLaunch.StagingFailExpTarget;
                         debugLog("Target number to gain flight experience: " + expGainTarget);
 
+                        //Crew gets stressed from parts failing
+                        snacksWrapper.AddStressToCrew(vessel, BARISStressCategories.stressCategoryMedium);
+
                         int failedModules = UnityEngine.Random.Range(1, failureCandidates.Length);
                         for (int index = 0; index < failedModules; index++)
                         {
@@ -354,9 +363,9 @@ namespace WildBlueIndustries
                             }
 
                             //There's a chance that the part will explode!
-                            if (BARISBreakableParts.FailuresCanExplode)
+                            if (BARISBridge.FailuresCanExplode)
                             {
-                                if (UnityEngine.Random.Range(1, 100) >= BARISBreakableParts.ExplosivePotentialLaunches)
+                                if (UnityEngine.Random.Range(1, 100) >= BARISBridge.ExplosivePotentialLaunches)
                                 {
                                     message = qualityControl.part.partInfo.title + Localizer.Format(BARISScenario.CatastrophicFailure);
                                     BARISScenario.Instance.LogPlayerMessage(message);
@@ -387,6 +396,9 @@ namespace WildBlueIndustries
                 case QualityCheckStatus.astronautAverted:
                     if (qualitySummary.rankingAstronaut != null)
                     {
+                        //Astronaut gets a small amount of stress
+                        snacksWrapper.AddStressToCrew(vessel, BARISStressCategories.stressCategoryLow);
+
                         message = qualitySummary.rankingAstronaut.name + Localizer.Format(BARISScenario.QualityCheckFailAvertedAstronaut3);
                         if (BARISSettings.LogAstronautAvertMsg)
                             BARISScenario.Instance.LogPlayerMessage(message);
@@ -530,6 +542,7 @@ namespace WildBlueIndustries
                 cardView.SetVisible(true);
                 GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
             }
+            disableTestModeIfNeeded();
 
             debugLog("onStageActivate: stageID: " + stageID);
             stageCheckInProgress = true;
@@ -566,6 +579,17 @@ namespace WildBlueIndustries
             if (report.origin != null)
                 debugLog("Part: " + report.origin.partInfo.title);
 
+        }
+
+        protected void disableTestModeIfNeeded()
+        {
+            if (FlightGlobals.ActiveVessel.FindPartModulesImplementing<ModuleTestStand>().Count == 0)
+            {
+                ModuleQualityControl[] qualityModules = FlightGlobals.ActiveVessel.FindPartModulesImplementing<ModuleQualityControl>().ToArray();
+
+                for (int index = 0; index < qualityModules.Length; index++)
+                    qualityModules[index].testStandMode = false;
+            }
         }
     }
 }

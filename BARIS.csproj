@@ -82,6 +82,7 @@
     <Compile Include="LaunchFailure\ModuleLESEngine.cs" />
     <Compile Include="Caching\MothballedVessel.cs" />
     <Compile Include="BreakablePartModules\ModuleBreakableParachute.cs" />
+    <Compile Include="QualityModules\ModuleTestStand.cs" />
     <Compile Include="Robonaut\ModuleRobonautExperimentManager.cs" />
     <Compile Include="Robonaut\ModuleRobonautPackChute.cs" />
     <Compile Include="Robonaut\ModuleRobonaut.cs" />
@@ -101,6 +102,7 @@
     <Compile Include="GUI\VesselsCompletedView.cs" />
     <Compile Include="Utilities\KACWrapper.cs" />
     <Compile Include="GUI\VehicleIntegrationStatusView.cs" />
+    <Compile Include="Utilities\SnacksWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="MarkdownSeparator.exe">

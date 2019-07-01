@@ -13,7 +13,7 @@ using KSP.Localization;
 #endif
 
 /*
-Source code copyrighgt 2017, by Michael Billard (Angel-125)
+Source code copyrighgt 2017-2019, by Michael Billard (Angel-125)
 License: GNU General Public License Version 3
 License URL: http://www.gnu.org/licenses/
 If you want to use this code, give me a shout on the KSP forums! :)
@@ -255,14 +255,14 @@ namespace WildBlueIndustries
         public static int BaseFacilityBonus = 10;
 
         /// <summary>
-        /// How many seconds must elapse before performing a quality check. Kerbin Time
+        /// How many seconds per day
         /// </summary>
-        public static double QualityCheckIntervalKerbin = 21600;
+        public static double secondsPerDay;
 
         /// <summary>
-        /// How many seconds must elapse before performing a quality check. Earth TIme
+        /// How many seconds per year
         /// </summary>
-        public static double QualityCheckIntervalEarth = 86400;
+        public static double secondsPerYear;
 
         /// <summary>
         /// Quality Penalty for failing a quality check when out of MTBF
@@ -672,8 +672,7 @@ namespace WildBlueIndustries
                 return;
 
             //Fire the time tick event.
-            if (onTimeTickEvent != null)
-                onTimeTickEvent();
+            onTimeTickEvent?.Invoke();
 
             //Integration bonus timer
             if (BARISSettingsLaunch.LaunchesCanFail && !isKCTInstalled)
@@ -824,7 +823,7 @@ namespace WildBlueIndustries
             if (node.HasValue("showedTigerTeamToolTip"))
                 showedTigerTeamToolTip = bool.Parse(node.GetValue("showedTigerTeamToolTip"));
 
-            if (node.HasValue("BARISRepairProject"))
+            if (node.HasNode("BARISRepairProject"))
             {
                 ConfigNode[] repairNodes = node.GetNodes("BARISRepairProject");
                 BARISRepairProject repairProject;
@@ -925,7 +924,7 @@ namespace WildBlueIndustries
             BARISSettings.RepairsRequireResources = RepairsRequireResources;
         }
 
-        public void Destroy()
+        public void OnDestroy()
         {
             GameEvents.OnGameSettingsApplied.Remove(onGameSettingsApplied);
             GameEvents.onCrewOnEva.Remove(onCrewOnEva);
@@ -1020,11 +1019,10 @@ namespace WildBlueIndustries
 
         protected void onGameSettingsApplied()
         {
-            SecondsPerDay = GameSettings.KERBIN_TIME == true ? QualityCheckIntervalKerbin : QualityCheckIntervalEarth;
+            SecondsPerDay = GetSecondsPerDay();
             if (BARISSettings.PartsCanBreak != partsCanBreak)
-            {
                 lastUpdateTime = Planetarium.GetUniversalTime();
-            }
+
             partsCanBreak = BARISSettings.PartsCanBreak;
             showDebug = BARISSettings.DebugMode;
             checksPerDay = BARISSettings.ChecksPerDay;
@@ -1038,8 +1036,49 @@ namespace WildBlueIndustries
             BARISBridge.DrillsCanFail = BARISBreakableParts.DrillsCanFail;
             BARISBridge.RepairsRequireResources = BARISSettings.RepairsRequireResources;
             BARISBridge.RepairsRequireEVA = BARISSettings.RepairsRequireEVA;
+            BARISBridge.RepairsRequireSkill = BARISSettings.RepairsRequireSkill;
             BARISBridge.CrewedPartsCanFail = BARISBreakableParts.CrewedPartsCanFail;
             BARISBridge.CommandPodsCanFail = BARISBreakableParts.CommandPodsCanFail;
+            BARISBridge.LogAstronautAvertMsg = BARISSettings.LogAstronautAvertMsg;
+            BARISBridge.EmailMaintenanceRequests = BARISSettings.EmailMaintenanceRequests;
+            BARISBridge.EmailRepairRequests = BARISSettings.EmailRepairRequests;
+            BARISBridge.VesselsNeedIntegration = BARISSettingsLaunch.VesselsNeedIntegration;
+            BARISBridge.FlightsPerQualityBonus = BARISSettingsLaunch.FlightsPerQualityBonus;
+            BARISBridge.RCSCanFail = BARISBreakableParts.RCSCanFail;
+            BARISBridge.SASCanFail = BARISBreakableParts.SASCanFail;
+            BARISBridge.TanksCanFail = BARISBreakableParts.TanksCanFail;
+            BARISBridge.TransmittersCanFail = BARISBreakableParts.TransmittersCanFail;
+            BARISBridge.ParachutesCanFail = BARISBreakableParts.ParachutesCanFail;
+            BARISBridge.FailuresCanExplode = BARISBreakableParts.FailuresCanExplode;
+            BARISBridge.ExplosivePotentialLaunches = BARISBreakableParts.ExplosivePotentialLaunches;
+            BARISBridge.EnginesCanFail = BARISBreakableParts.EnginesCanFail;
+            BARISBridge.ExplosivePotentialCritical = BARISBreakableParts.ExplosivePotentialCritical;
+            BARISBridge.QualityCap = BARISSettings.QualityCap;
+
+            //Update loaded vessels
+            if (HighLogic.LoadedSceneIsFlight)
+                StartCoroutine(updateLoadedVesselSettings());
+        }
+
+        protected IEnumerator<YieldInstruction> updateLoadedVesselSettings()
+        {
+            int count = FlightGlobals.VesselsLoaded.Count;
+            Vessel vessel;
+            ModuleQualityControl[] qualityControls;
+            for (int index = 0; index < count; index++)
+            {
+                vessel = FlightGlobals.VesselsLoaded[index];
+
+                //Update quality modules
+                qualityControls = vessel.FindPartModulesImplementing<ModuleQualityControl>().ToArray();
+                for (int qualityModuleIndex = 0; qualityModuleIndex < qualityControls.Length; qualityModuleIndex++)
+                {
+                    qualityControls[qualityModuleIndex].UpdateSettings();
+                    yield return new WaitForFixedUpdate();
+                }
+            }
+
+            yield return new WaitForFixedUpdate();
         }
 
         protected void onVesselChange(Vessel vessel)
@@ -2297,8 +2336,7 @@ namespace WildBlueIndustries
                 debugLog("Quality check: Fail");
             }
 
-            if (onQualityCheck != null)
-                onQualityCheck(result);
+            onQualityCheck?.Invoke(result);
             return result;
         }
 
@@ -2750,6 +2788,37 @@ namespace WildBlueIndustries
         #endregion
 
         #region Helpers
+        public static double GetSecondsPerDay()
+        {
+            if (secondsPerDay > 0)
+                return secondsPerDay;
+
+            //Find homeworld
+            int count = FlightGlobals.Bodies.Count;
+            CelestialBody body = null;
+            for (int index = 0; index < count; index++)
+            {
+                body = FlightGlobals.Bodies[index];
+                if (body.isHomeWorld)
+                    break;
+                else
+                    body = null;
+            }
+            if (body == null)
+            {
+                secondsPerYear = 21600 * 426.08;
+                secondsPerDay = 21600;
+                return secondsPerDay;
+            }
+
+            //Also get seconds per year
+            secondsPerYear = body.orbit.period;
+
+            //Return solar day length
+            secondsPerDay = body.solarDayLength;
+            return secondsPerDay;
+        }
+
         protected void emailVesselRepairsRequest()
         {
             string[] vesselNames = focusVesselView.vesselNames.ToArray();
@@ -2837,7 +2906,7 @@ namespace WildBlueIndustries
                 eventCardStartTime = Planetarium.GetUniversalTime();
 
             double elapsedTime = Planetarium.GetUniversalTime() - eventCardStartTime;
-            double checkInterval = GameSettings.KERBIN_TIME == true ? QualityCheckIntervalKerbin : QualityCheckIntervalEarth;
+            double checkInterval = GetSecondsPerDay();
             checkInterval *= eventCardFrequency;
 
             //If we've met or exceeded our check interval, then it's time to play an event card.
@@ -2876,7 +2945,7 @@ namespace WildBlueIndustries
                 integrationStartTime = Planetarium.GetUniversalTime();
 
             double elapsedTime = Planetarium.GetUniversalTime() - integrationStartTime;
-            double checkInterval = GameSettings.KERBIN_TIME == true ? QualityCheckIntervalKerbin : QualityCheckIntervalEarth;
+            double checkInterval = GetSecondsPerDay();
 
             if (elapsedTime >= checkInterval)
             {
@@ -2890,7 +2959,7 @@ namespace WildBlueIndustries
                 payrollStartTime = Planetarium.GetUniversalTime();
 
             double elapsedTime = Planetarium.GetUniversalTime() - payrollStartTime;
-            double checkInterval = GameSettings.KERBIN_TIME == true ? QualityCheckIntervalKerbin : QualityCheckIntervalEarth;
+            double checkInterval = GetSecondsPerDay();
             checkInterval *= DaysPerPayroll;
 
             if (elapsedTime >= checkInterval)
@@ -2940,7 +3009,7 @@ namespace WildBlueIndustries
 
             //Check elapsed time and perform reliability check as needed
             double elapsedTime = Planetarium.GetUniversalTime() - lastUpdateTime;
-            qualityCheckInterval = GameSettings.KERBIN_TIME == true ? QualityCheckIntervalKerbin : QualityCheckIntervalEarth;
+            qualityCheckInterval = GetSecondsPerDay();
             qualityCheckInterval /= checksPerDay;
             if (elapsedTime >= qualityCheckInterval)
             {
@@ -2998,34 +3067,30 @@ namespace WildBlueIndustries
                 rcsIsActive = FlightGlobals.ActiveVessel.ActionGroups[KSPActionGroup.RCS];
                 sasIsActive = FlightGlobals.ActiveVessel.ActionGroups[KSPActionGroup.SAS];
 
-                if ((rcsIsActive != rcsWasActive) && BARISBreakableParts.RCSCanFail)
+                if ((rcsIsActive != rcsWasActive) && BARISBridge.RCSCanFail)
                 {
                     rcsWasActive = rcsIsActive;
-                    if (onRcsUpdate != null)
-                        onRcsUpdate(rcsIsActive);
+                    onRcsUpdate?.Invoke(rcsIsActive);
                 }
 
-                if ((sasIsActive != sasWasActive) && BARISBreakableParts.SASCanFail)
+                if ((sasIsActive != sasWasActive) && BARISBridge.SASCanFail)
                 {
                     sasWasActive = sasIsActive;
-                    if (onSasUpdate != null)
-                        onSasUpdate(sasIsActive);
+                    onSasUpdate?.Invoke(sasIsActive);
                 }
 
                 //Check for throttle state
-                if (BARISBreakableParts.EnginesCanFail)
+                if (BARISBridge.EnginesCanFail)
                 {
                     if (FlightInputHandler.state.mainThrottle > 0f && !isThrottleUp)
                     {
                         isThrottleUp = true;
-                        if (onThrottleUpDown != null)
-                            onThrottleUpDown(isThrottleUp);
+                        onThrottleUpDown?.Invoke(isThrottleUp);
                     }
                     else if (FlightInputHandler.state.mainThrottle <= 0f && isThrottleUp)
                     {
                         isThrottleUp = false;
-                        if (onThrottleUpDown != null)
-                            onThrottleUpDown(isThrottleUp);
+                        onThrottleUpDown?.Invoke(isThrottleUp);
                     }
                 }
             }
@@ -3381,12 +3446,6 @@ namespace WildBlueIndustries
 
             if (node.HasValue("BaseFacilityBonus"))
                 BaseFacilityBonus = int.Parse(node.GetValue("BaseFacilityBonus"));
-
-            if (node.HasValue("QualityCheckIntervalKerbin"))
-                QualityCheckIntervalKerbin = double.Parse(node.GetValue("QualityCheckIntervalKerbin"));
-
-            if (node.HasValue("QualityCheckIntervalEarth"))
-                QualityCheckIntervalEarth = double.Parse(node.GetValue("QualityCheckIntervalEarth"));
 
             if (node.HasValue("QualityCheckFailLoss"))
                 QualityCheckFailLoss = int.Parse(node.GetValue("QualityCheckFailLoss"));

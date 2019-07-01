@@ -75,6 +75,22 @@ namespace WildBlueIndustries
         public static bool RepairsRequireEVA;
         public static bool CrewedPartsCanFail;
         public static bool CommandPodsCanFail;
+        public static bool RepairsRequireSkill;
+        public static bool LogAstronautAvertMsg;
+        public static bool EmailMaintenanceRequests;
+        public static bool EmailRepairRequests;
+        public static bool VesselsNeedIntegration;
+        public static int FlightsPerQualityBonus;
+        public static bool RCSCanFail;
+        public static bool SASCanFail;
+        public static bool TanksCanFail;
+        public static bool TransmittersCanFail;
+        public static bool ParachutesCanFail;
+        public static bool FailuresCanExplode;
+        public static float ExplosivePotentialLaunches;
+        public static float ExplosivePotentialCritical;
+        public static bool EnginesCanFail;
+        public static int QualityCap;
 
         public PlayModeUpdateDelegate playModeUpdate;
 

@@ -1,0 +1,32 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workbench ActiveDocument="Utilities/SnacksWrapper.cs">
+    <Files>
+      <File FileName="Utilities/SnacksWrapper.cs" Line="81" Column="41" />
+      <File FileName="SettingsAndScenario/BARISScenario.cs" Line="578" Column="1" />
+      <File FileName="QualityModules/ModuleQualityControl.cs" Line="1158" Column="49" />
+      <File FileName="LaunchFailure/BARISLaunchFailManager.cs" Line="398" Column="66" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="BARIS" expanded="True">
+            <Node name="BARIS" expanded="True">
+              <Node name="LaunchFailure" expanded="True" />
+              <Node name="QualityModules" expanded="True" />
+              <Node name="SettingsAndScenario" expanded="True" />
+              <Node name="Utilities" expanded="True">
+                <Node name="SnacksWrapper.cs" selected="True" />
+              </Node>
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MultiItemStartupConfigurations />
+</Properties>

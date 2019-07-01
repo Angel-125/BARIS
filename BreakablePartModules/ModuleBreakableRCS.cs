@@ -11,7 +11,7 @@ using KSP.Localization;
 #endif
 
 /*
-Source code copyrighgt 2017, by Michael Billard (Angel-125)
+Source code copyrighgt 2017-2019, by Michael Billard (Angel-125)
 License: GNU General Public License Version 3
 License URL: http://www.gnu.org/licenses/
 If you want to use this code, give me a shout on the KSP forums! :)
@@ -68,13 +68,18 @@ namespace WildBlueIndustries
             rcsModule = this.part.FindModuleImplementing<ModuleRCS>();
         }
 
-        public void Destroy()
+        public void OnDestroy()
         {
-            qualityControl.onUpdateSettings -= onUpdateSettings;
-            qualityControl.onPartBroken -= OnPartBroken;
-            qualityControl.onPartFixed -= OnPartFixed;
-            qualityControl.onMothballStateChanged -= onMothballStateChanged;
-            BARISScenario.Instance.onSasUpdate -= onRcsUpdate;
+            if (qualityControl != null)
+            {
+                qualityControl.onUpdateSettings -= onUpdateSettings;
+                qualityControl.onPartBroken -= OnPartBroken;
+                qualityControl.onPartFixed -= OnPartFixed;
+                qualityControl.onMothballStateChanged -= onMothballStateChanged;
+            }
+
+            if (BARISScenario.Instance != null)
+                BARISScenario.Instance.onSasUpdate -= onRcsUpdate;
         }
 
         protected void onRcsUpdate(bool rcsActive)
@@ -114,12 +119,12 @@ namespace WildBlueIndustries
 
         public bool ModuleIsActivated()
         {
-            if (!BARISBreakableParts.CrewedPartsCanFail && this.part.CrewCapacity > 0)
+            if (!BARISBridge.CrewedPartsCanFail && this.part.CrewCapacity > 0)
                 return false;
-            if (!BARISBreakableParts.CommandPodsCanFail && this.part.FindModuleImplementing<ModuleCommand>() != null)
+            if (!BARISBridge.CommandPodsCanFail && this.part.FindModuleImplementing<ModuleCommand>() != null)
                 return false;
 
-            if (!BARISBreakableParts.RCSCanFail)
+            if (!BARISBridge.RCSCanFail)
                 return false;
 
             return IsActive;
@@ -142,7 +147,7 @@ namespace WildBlueIndustries
         protected void onUpdateSettings(BaseQualityControl moduleQualityControl)
         {
             //Quality check events
-            if (BARISSettings.PartsCanBreak && BARISBreakableParts.RCSCanFail)
+            if (BARISBridge.PartsCanBreak && BARISBridge.RCSCanFail)
             {
                 BARISScenario.Instance.onRcsUpdate += onRcsUpdate;
             }
@@ -154,7 +159,7 @@ namespace WildBlueIndustries
 
         public void OnPartBroken(BaseQualityControl moduleQualityControl)
         {
-            if (!BARISSettings.PartsCanBreak && !BARISBreakableParts.RCSCanFail)
+            if (!BARISSettings.PartsCanBreak && !BARISBridge.RCSCanFail)
                 return;
 
             isBroken = true;

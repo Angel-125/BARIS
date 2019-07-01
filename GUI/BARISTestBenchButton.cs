@@ -36,7 +36,7 @@ namespace WildBlueIndustries
             GameEvents.onGUIApplicationLauncherReady.Add(SetupGUI);
         }
 
-        public void Destroy()
+        public void OnDestroy()
         {
             testBenchView.SetVisible(false);
         }

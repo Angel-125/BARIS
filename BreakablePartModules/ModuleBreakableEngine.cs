@@ -11,7 +11,7 @@ using KSP.Localization;
 #endif
 
 /*
-Source code copyrighgt 2017, by Michael Billard (Angel-125)
+Source code copyrighgt 2017-2019, by Michael Billard (Angel-125)
 License: GNU General Public License Version 3
 License URL: http://www.gnu.org/licenses/
 If you want to use this code, give me a shout on the KSP forums! :)
@@ -75,6 +75,7 @@ namespace WildBlueIndustries
         ModuleQualityControl qualityControl;
         bool partsCanBreak = true;
         bool isMothballed;
+
         #region API
 
         /// <summary>
@@ -292,12 +293,17 @@ namespace WildBlueIndustries
                 BARISScenario.Instance.onTimeTickEvent += failureModeTimeTick;
         }
 
-        public void Destroy()
+        public void OnDestroy()
         {
-            BARISScenario.Instance.onTimeTickEvent -= failureModeTimeTick;
-            qualityControl.onUpdateSettings -= onUpdateSettings;
-            qualityControl.onPartBroken -= OnPartBroken;
-            qualityControl.onPartFixed -= OnPartFixed;
+            if (BARISScenario.Instance != null)
+                BARISScenario.Instance.onTimeTickEvent -= failureModeTimeTick;
+
+            if (qualityControl != null)
+            {
+                qualityControl.onUpdateSettings -= onUpdateSettings;
+                qualityControl.onPartBroken -= OnPartBroken;
+                qualityControl.onPartFixed -= OnPartFixed;
+            }
         }
 
         public override void OnUpdate()
@@ -336,12 +342,12 @@ namespace WildBlueIndustries
 
         public bool ModuleIsActivated()
         {
-            if (!BARISBreakableParts.CrewedPartsCanFail && this.part.CrewCapacity > 0)
+            if (!BARISBridge.CrewedPartsCanFail && this.part.CrewCapacity > 0)
                 return false;
-            if (!BARISBreakableParts.CommandPodsCanFail && this.part.FindModuleImplementing<ModuleCommand>() != null)
+            if (!BARISBridge.CommandPodsCanFail && this.part.FindModuleImplementing<ModuleCommand>() != null)
                 return false;
 
-            if (!BARISBreakableParts.EnginesCanFail)
+            if (!BARISBridge.EnginesCanFail)
                 return false;
 
             return EngineIsRunning;
@@ -368,10 +374,10 @@ namespace WildBlueIndustries
 
         protected void onUpdateSettings(BaseQualityControl moduleQualityControl)
         {
-            Events["ExplodeEngine"].guiActive = BARISScenario.showDebug;
-            Events["EngineStuckOn"].guiActive = BARISScenario.showDebug;
-            Events["ShutdownEngine"].guiActive = BARISScenario.showDebug;
-            Events["GenerateFailureMode"].guiActive = BARISScenario.showDebug;
+            Events["ExplodeEngine"].active = BARISScenario.showDebug;
+            Events["EngineStuckOn"].active = BARISScenario.showDebug;
+            Events["ShutdownEngine"].active = BARISScenario.showDebug;
+            Events["GenerateFailureMode"].active = BARISScenario.showDebug;
 
             partsCanBreak = BARISScenario.partsCanBreak;
         }
@@ -403,7 +409,7 @@ namespace WildBlueIndustries
 
         public void OnPartBroken(BaseQualityControl moduleQualityControl)
         {
-            if (!BARISSettings.PartsCanBreak || !BARISBreakableParts.EnginesCanFail)
+            if (!BARISBridge.PartsCanBreak || !BARISBridge.EnginesCanFail)
                 return;
 
             //Generate a failure mode

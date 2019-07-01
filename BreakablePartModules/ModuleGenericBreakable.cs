@@ -11,7 +11,7 @@ using KSP.Localization;
 #endif
 
 /*
-Source code copyrighgt 2017, by Michael Billard (Angel-125)
+Source code copyrighgt 2017-2019, by Michael Billard (Angel-125)
 License: GNU General Public License Version 3
 License URL: http://www.gnu.org/licenses/
 If you want to use this code, give me a shout on the KSP forums! :)
@@ -126,19 +126,25 @@ namespace WildBlueIndustries
             }
         }
 
-        public void Destroy()
+        public void OnDestroy()
         {
-            qualityControl.onUpdateSettings -= onUpdateSettings;
-            qualityControl.onPartBroken -= OnPartBroken;
-            qualityControl.onPartFixed -= OnPartFixed;
-            qualityControl.onMothballStateChanged -= onMothballStateChanged;
+            if (qualityControl != null)
+            {
+                qualityControl.onUpdateSettings -= onUpdateSettings;
+                qualityControl.onPartBroken -= OnPartBroken;
+                qualityControl.onPartFixed -= OnPartFixed;
+                qualityControl.onMothballStateChanged -= onMothballStateChanged;
+            }
 
-            if (checkQualityDuringRCSToggle)
-                BARISScenario.Instance.onSasUpdate -= onRCSUpdate;
-            if (checkQualityDuringSASToggle)
-                BARISScenario.Instance.onSasUpdate -= onSASUpdate;
-            if (checkQualityDuringThrottling)
-                BARISScenario.Instance.onThrottleUpDown -= onThrottleUpdate;
+            if (BARISScenario.Instance != null)
+            {
+                if (checkQualityDuringRCSToggle)
+                    BARISScenario.Instance.onSasUpdate -= onRCSUpdate;
+                if (checkQualityDuringSASToggle)
+                    BARISScenario.Instance.onSasUpdate -= onSASUpdate;
+                if (checkQualityDuringThrottling)
+                    BARISScenario.Instance.onThrottleUpDown -= onThrottleUpdate;
+            }
         }
 
         public void onMothballStateChanged(bool isMothballed)
@@ -183,12 +189,12 @@ namespace WildBlueIndustries
 
         public bool ModuleIsActivated()
         {
-            if (!BARISBreakableParts.CrewedPartsCanFail && this.part.CrewCapacity > 0)
+            if (!BARISBridge.CrewedPartsCanFail && this.part.CrewCapacity > 0)
                 return false;
-            if (!BARISBreakableParts.CommandPodsCanFail && this.part.FindModuleImplementing<ModuleCommand>() != null)
+            if (!BARISBridge.CommandPodsCanFail && this.part.FindModuleImplementing<ModuleCommand>() != null)
                 return false;
 
-            if (!BARISSettings.PartsCanBreak || (!BARISBreakableParts.RCSCanFail && !BARISBreakableParts.SASCanFail))
+            if (!BARISSettings.PartsCanBreak || (!BARISBridge.RCSCanFail && !BARISBridge.SASCanFail))
                 return false;
 
             return RCSIsActive || SASIsActive;
@@ -211,7 +217,7 @@ namespace WildBlueIndustries
         protected void onUpdateSettings(BaseQualityControl moduleQualityControl)
         {
             //Quality check events
-            if (BARISSettings.PartsCanBreak && BARISBreakableParts.RCSCanFail)
+            if (BARISBridge.PartsCanBreak && BARISBridge.RCSCanFail)
             {
                 if (checkQualityDuringRCSToggle)
                     BARISScenario.Instance.onRcsUpdate += onRCSUpdate;
@@ -233,7 +239,7 @@ namespace WildBlueIndustries
 
         public void OnPartBroken(BaseQualityControl moduleQualityControl)
         {
-            if (!BARISSettings.PartsCanBreak && !BARISBreakableParts.RCSCanFail)
+            if (!BARISBridge.PartsCanBreak && !BARISBridge.RCSCanFail)
                 return;
 
             isBroken = true;

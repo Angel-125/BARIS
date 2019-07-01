@@ -14,7 +14,6 @@ C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\UnityEngine.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\UnityEngine.UI.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\KSPTrackIR.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\Mono.Cecil.dll
-C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\Ionic.Zip.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\TDx.TDxInput.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\BARISBridge.pdb
 C:\Projects\KSP\WildBlueIndustries\BARIS\obj\Debug\BARIS.csprojAssemblyReference.cache
@@ -22,3 +21,4 @@ C:\Projects\KSP\WildBlueIndustries\BARIS\obj\Debug\BARIS.csproj.CoreCompileInput
 C:\Projects\KSP\WildBlueIndustries\BARIS\obj\Debug\BARIS.csproj.CopyComplete
 C:\Projects\KSP\WildBlueIndustries\BARIS\obj\Debug\BARIS.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\obj\Debug\BARIS.pdb
+C:\Projects\KSP\WildBlueIndustries\BARIS\bin\Debug\Ionic.Zip.dll

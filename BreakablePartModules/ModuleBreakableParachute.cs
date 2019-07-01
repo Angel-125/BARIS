@@ -12,7 +12,7 @@ using KSP.Localization;
 #endif
 
 /*
-Source code copyrighgt 2017, by Michael Billard (Angel-125)
+Source code copyrighgt 2017-2019, by Michael Billard (Angel-125)
 License: GNU General Public License Version 3
 License URL: http://www.gnu.org/licenses/
 If you want to use this code, give me a shout on the KSP forums! :)
@@ -42,11 +42,14 @@ namespace WildBlueIndustries
         bool partsCanBreak = true;
         bool isMothballed;
 
-        public void Destroy()
+        public override void OnDestroy()
         {
-           //qualityControl.onUpdateSettings -= onUpdateSettings;
-            qualityControl.onPartBroken -= OnPartBroken;
-            qualityControl.onPartFixed -= OnPartFixed;
+            base.OnDestroy();
+            if (qualityControl != null)
+            {
+                qualityControl.onPartBroken -= OnPartBroken;
+                qualityControl.onPartFixed -= OnPartFixed;
+            }
         }
 
         #region
@@ -57,9 +60,9 @@ namespace WildBlueIndustries
 
         public bool ModuleIsActivated()
         {
-            if (!BARISBreakableParts.CrewedPartsCanFail && this.part.CrewCapacity > 0)
+            if (!BARISBridge.CrewedPartsCanFail && this.part.CrewCapacity > 0)
                 return false;
-            if (!BARISBreakableParts.CommandPodsCanFail && this.part.FindModuleImplementing<ModuleCommand>() != null)
+            if (!BARISBridge.CommandPodsCanFail && this.part.FindModuleImplementing<ModuleCommand>() != null)
                 return false;
 
             return true;
@@ -95,7 +98,7 @@ namespace WildBlueIndustries
 
         public void OnPartBroken(BaseQualityControl moduleQualityControl)
         {
-            if (!BARISSettings.PartsCanBreak || !BARISBreakableParts.EnginesCanFail)
+            if (!BARISBridge.PartsCanBreak || !BARISBridge.EnginesCanFail)
                 return;
 
             //Record state
@@ -134,7 +137,7 @@ namespace WildBlueIndustries
                 return false;
             if (this.qualityControl == null)
                 return base.PassedAdditionalDeploymentChecks();
-            if (!BARISBreakableParts.ParachutesCanFail)
+            if (!BARISBridge.ParachutesCanFail)
                 return base.PassedAdditionalDeploymentChecks();
 
             //Make quality check

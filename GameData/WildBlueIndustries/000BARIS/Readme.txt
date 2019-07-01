@@ -16,6 +16,21 @@ NOTE: ModuleManager is REQUIRED.
 
 ---REVISION HISTORY---
 
+1.9.0 Test Stand Mini-Game
+
+New Part Capability
+- Launch Clamp: The stock Launch Clamp now contains a test stand. If you enable the test stand and then manipulate your vessel via the Part Action Windows or action buttons, and a part fails, then there's a chance that the part's quality will improve. The higher the part's quality, the less likely that it'll experience a part failure, and the less likely that it has a chance to improve. There's also a chance that the vessel will explode when performing tests... and the chance goes up each time that a part fails...
+
+Bug fixes & enhancements
+- If Snacks is installed and Stress is enabled, part failures and staging failures will cause Stress!
+- Seconds per day and seconds per year are now calculated based on the homeworld's solar day and solar year instead of hard coded from KSP's 6hr/24hr day.
+- Fixed issue where repair projects weren't being saved and loaded properly.
+- Performance improvements when applying game settings.
+- NRE fixes.
+
+1.8.3
+- Fuel tanks now have a new action: Detonate Explosives.
+
 1.8.2
 - Fixed event cards that shouldn't appear when Kerbal Construction Time is installed.
 - Fixed vehicle integration button in space center view being shown when Kerbal Construction Time is installed.

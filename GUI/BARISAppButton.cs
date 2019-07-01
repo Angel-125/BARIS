@@ -49,7 +49,7 @@ namespace WildBlueIndustries
             kctEditorView = new KCTEditorView();
         }
 
-        public void Destroy()
+        public void OnDestroy()
         {
             switch (HighLogic.LoadedScene)
             {

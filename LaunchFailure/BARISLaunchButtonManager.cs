@@ -98,13 +98,16 @@ namespace WildBlueIndustries
             }
         }
 
-        public void Destroy()
+        public void OnDestroy()
         {
             if (BARISScenario.isKCTInstalled)
                 return;
             //Reset listeners
-            EditorLogic.fetch.launchBtn.onClick.RemoveListener(new UnityEngine.Events.UnityAction(BARISLaunchButtonManager.Instance.launchVessel));
-            EditorLogic.fetch.newBtn.onClick.RemoveListener(new UnityEngine.Events.UnityAction(BARISLaunchButtonManager.Instance.onNewVessel));
+            if (EditorLogic.fetch != null)
+            {
+                EditorLogic.fetch.launchBtn.onClick.RemoveListener(new UnityEngine.Events.UnityAction(BARISLaunchButtonManager.Instance.launchVessel));
+                EditorLogic.fetch.newBtn.onClick.RemoveListener(new UnityEngine.Events.UnityAction(BARISLaunchButtonManager.Instance.onNewVessel));
+            }
 
             //Events
             GameEvents.onEditorShipModified.Remove(onEditorShipModified);

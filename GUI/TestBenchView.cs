@@ -57,10 +57,13 @@ namespace WildBlueIndustries
             base.SetVisible(newValue);
 
             //Are we in VAB or SPH?
-            if (EditorLogic.fetch.ship.shipFacility == EditorFacility.VAB)
-                isVAB = true;
-            else
-                isVAB = false;
+            if (EditorLogic.fetch != null)
+            {
+                if (EditorLogic.fetch.ship.shipFacility == EditorFacility.VAB)
+                    isVAB = true;
+                else
+                    isVAB = false;
+            }
 
             if (fundsIcon == null)
                 fundsIcon = GameDatabase.Instance.GetTexture("WildBlueIndustries/000BARIS/Icons/FundsIcon", false);
@@ -79,7 +82,7 @@ namespace WildBlueIndustries
             }
         }
 
-        public void Destroy()
+        public void OnOnDestroy()
         {
             GameEvents.onEditorShipModified.Remove(onEditorShipModified);
         }

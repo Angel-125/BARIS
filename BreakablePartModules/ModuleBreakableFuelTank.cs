@@ -12,7 +12,7 @@ using KSP.Localization;
 #endif
 
 /*
-Source code copyrighgt 2017, by Michael Billard (Angel-125)
+Source code copyrighgt 2017-2019, by Michael Billard (Angel-125)
 License: GNU General Public License Version 3
 License URL: http://www.gnu.org/licenses/
 If you want to use this code, give me a shout on the KSP forums! :)
@@ -73,9 +73,9 @@ namespace WildBlueIndustries
 
         protected void onUpdateSettings(BaseQualityControl moduleQualityControl)
         {
-            Events["CreateSmallLeak"].guiActive = BARISScenario.showDebug;
-            Events["CreateMediumLeak"].guiActive = BARISScenario.showDebug;
-            Events["CreateLargeLeak"].guiActive = BARISScenario.showDebug;
+            Events["CreateSmallLeak"].active = BARISScenario.showDebug;
+            Events["CreateMediumLeak"].active = BARISScenario.showDebug;
+            Events["CreateLargeLeak"].active = BARISScenario.showDebug;
         }
 
         #region ICanBreak
@@ -86,12 +86,12 @@ namespace WildBlueIndustries
 
         public bool ModuleIsActivated()
         {
-            if (!BARISBreakableParts.CrewedPartsCanFail && this.part.CrewCapacity > 0)
+            if (!BARISBridge.CrewedPartsCanFail && this.part.CrewCapacity > 0)
                 return false;
-            if (!BARISBreakableParts.CommandPodsCanFail && this.part.FindModuleImplementing<ModuleCommand>() != null)
+            if (!BARISBridge.CommandPodsCanFail && this.part.FindModuleImplementing<ModuleCommand>() != null)
                 return false;
 
-            if (!BARISSettings.PartsCanBreak || !BARISBreakableParts.TanksCanFail)
+            if (!BARISSettings.PartsCanBreak || !BARISBridge.TanksCanFail)
                 return false;
 
             for (int index = 0; index < this.part.Resources.Count; index++)
@@ -127,7 +127,7 @@ namespace WildBlueIndustries
 
         public void OnPartBroken(BaseQualityControl moduleQualityControl)
         {
-            if (!BARISSettings.PartsCanBreak || !BARISBreakableParts.TanksCanFail)
+            if (!BARISBridge.PartsCanBreak || !BARISBridge.TanksCanFail)
                 return;
 
             //If we're out of MTBF and we suffered a critical failure, then dump resources or blow up the part.
@@ -168,18 +168,19 @@ namespace WildBlueIndustries
                 BARISScenario.Instance.onTimeTickEvent += leakTimeTick;
 
             GameEvents.onPartResourceFlowStateChange.Add(onFlowStateChanged);
-//            GameEvents.onPartResourceNonemptyEmpty.Add(onPartResourceNonemptyEmpty);
-//            GameEvents.onPartResourceNonemptyFull.Add(onPartResourceNonemptyFull);
         }
 
-        public void Destroy()
+        public void OnDestroy()
         {
-//            GameEvents.onPartResourceNonemptyFull.Remove(onPartResourceNonemptyFull);
-//            GameEvents.onPartResourceNonemptyEmpty.Remove(onPartResourceNonemptyEmpty);
-            GameEvents.onPartResourceFlowStateChange.Remove(onFlowStateChanged);
-            qualityControl.onUpdateSettings -= onUpdateSettings;
-            qualityControl.onPartBroken -= OnPartBroken;
-            qualityControl.onPartFixed -= OnPartFixed;
+            if (BARISScenario.Instance != null)
+                GameEvents.onPartResourceFlowStateChange.Remove(onFlowStateChanged);
+
+            if (qualityControl != null)
+            {
+                qualityControl.onUpdateSettings -= onUpdateSettings;
+                qualityControl.onPartBroken -= OnPartBroken;
+                qualityControl.onPartFixed -= OnPartFixed;
+            }
         }
         #endregion
 
@@ -205,6 +206,17 @@ namespace WildBlueIndustries
         public void ToggleResourceLocksAction(KSPActionParam param)
         {
             ToggleResourceLocks();
+        }
+
+        [KSPAction(guiName = "Detonate Explosives")]
+        public void DetonateExplosivesAction(KSPActionParam param)
+        {
+            Part[] childParts = this.part.children.ToArray();
+            for (int index = 0; index < childParts.Length; index++)
+                childParts[index].decouple(50);
+
+            this.part.explosionPotential = 0.6f;
+            this.part.explode();
         }
 
         /// <summary>

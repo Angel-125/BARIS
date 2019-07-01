@@ -114,12 +114,15 @@ namespace WildBlueIndustries
             Actions["StartConverterAction"].guiName = StartActionName;
         }
 
-        public virtual void Destroy()
+        public virtual void OnDestroy()
         {
-            qualityControl.onPartBroken -= OnPartBroken;
-            qualityControl.onPartFixed -= OnPartFixed;
-            qualityControl.onUpdateSettings -= onUpdateSettings;
-            qualityControl.onMothballStateChanged -= onMothballStateChanged;
+            if (qualityControl != null)
+            {
+                qualityControl.onPartBroken -= OnPartBroken;
+                qualityControl.onPartFixed -= OnPartFixed;
+                qualityControl.onUpdateSettings -= onUpdateSettings;
+                qualityControl.onMothballStateChanged -= onMothballStateChanged;
+            }
         }
 
         public void onMothballStateChanged(bool isMothballed)

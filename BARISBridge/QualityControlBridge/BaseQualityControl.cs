@@ -112,6 +112,7 @@ namespace WildBlueIndustries
 
         public virtual void DeclarePartBroken()
         {
+            FireOnPartBroken();
         }
 
         public virtual void FireOnUpdateSettings()
@@ -122,14 +123,12 @@ namespace WildBlueIndustries
 
         public virtual void FireOnPartFixed()
         {
-            if (this.onPartFixed != null)
-                onPartFixed(this);
+            onPartFixed?.Invoke(this);
         }
 
         public virtual void FireOnPartBroken()
         {
-            if (onPartBroken != null)
-                onPartBroken(this);
+            onPartBroken?.Invoke(this);
         }
     }
 }

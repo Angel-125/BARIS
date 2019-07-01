@@ -52,7 +52,7 @@ namespace WildBlueIndustries
             }
         }
 
-        public void Destroy()
+        public void OnDestroy()
         {
             GameEvents.onEditorShipModified.Remove(onEditorShipModified);
         }

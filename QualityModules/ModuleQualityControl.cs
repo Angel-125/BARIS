@@ -11,7 +11,7 @@ using KSP.Localization;
 //using Expansions.Missions.Adjusters;
 
 /*
-Source code copyrighgt 2017, by Michael Billard (Angel-125)
+Source code copyrighgt 2017-2019, by Michael Billard (Angel-125)
 License: GNU General Public License Version 3
 License URL: http://www.gnu.org/licenses/
 If you want to use this code, give me a shout on the KSP forums! :)
@@ -230,13 +230,19 @@ namespace WildBlueIndustries
         /// </summary>
         List<ICanBreak> breakableParts = new List<ICanBreak>();
 
+        /// <summary>
+        /// Flag to indicate if we're running in test stand mode.
+        /// </summary>
+        public bool testStandMode;
+
         //When a part is broken, its highlight color turns red and flashes for a few seconds.
         //These parameters help keep track of the highlighting.
-        protected Color originalHighlightColor;
+        public  Color originalHighlightColor;
         protected double highlightStartTime;
         protected BaseConverter[] baseConverters = null;
         protected int totalConverters = 0;
         double deathWatchStart = 0;
+        SnacksWrapper snacksWrapper = new SnacksWrapper();
         #endregion
 
         #region API
@@ -313,7 +319,7 @@ namespace WildBlueIndustries
             string message;
 
             //Make sure we have sufficient skill
-            if (BARISSettings.RepairsRequireSkill && !hasSufficientSkill())
+            if (BARISBridge.RepairsRequireSkill && !hasSufficientSkill())
             {
                 //Inform player
                 if (this.part.vessel == FlightGlobals.ActiveVessel)
@@ -327,7 +333,7 @@ namespace WildBlueIndustries
             }
 
             //Make sure we can afford the cost
-            if (BARISSettings.RepairsRequireResources && !paidRepairCost(repairUnits))
+            if (BARISBridge.RepairsRequireResources && !paidRepairCost(repairUnits))
             {
                 //Inform player
                 if (this.part.vessel == FlightGlobals.ActiveVessel)
@@ -357,7 +363,7 @@ namespace WildBlueIndustries
             string message;
 
             //Make sure we have sufficient skill
-            if (BARISSettings.RepairsRequireSkill && !hasSufficientSkill())
+            if (BARISBridge.RepairsRequireSkill && !hasSufficientSkill())
             {
                 //Inform player
                 if (this.part.vessel == FlightGlobals.ActiveVessel)
@@ -371,7 +377,7 @@ namespace WildBlueIndustries
             }
 
             //Make sure we can afford the cost
-            if (BARISSettings.RepairsRequireResources && !paidRepairCost(maintenanceUnits))
+            if (BARISBridge.RepairsRequireResources && !paidRepairCost(maintenanceUnits))
             {
                 //Inform player
                 if (this.part.vessel == FlightGlobals.ActiveVessel)
@@ -400,11 +406,13 @@ namespace WildBlueIndustries
 
                 case QualityCheckStatus.criticalFail:
                     PerformQualityMaintCriticalFail();
+                    snacksWrapper.AddStressToCrew(vessel, BARISStressCategories.stressCategoryMedium);
                     break;
 
                 case QualityCheckStatus.fail:
                     message = Localizer.Format(BARISScenario.PartMaintenanceFailed);
                     BARISScenario.Instance.LogPlayerMessage(message);
+                    snacksWrapper.AddStressToCrew(vessel, BARISStressCategories.stressCategoryLow);
                     break;
 
                 case QualityCheckStatus.astronautAverted:
@@ -412,7 +420,7 @@ namespace WildBlueIndustries
                     {
                         message = qualityResult.astronaut.name + Localizer.Format(BARISScenario.QualityCheckFailAvertedAstronaut1) + this.part.partInfo.title +
                             Localizer.Format(BARISScenario.QualityCheckFailAvertedAstronaut2);
-                        if (BARISSettings.LogAstronautAvertMsg)
+                        if (BARISBridge.LogAstronautAvertMsg)
                             BARISScenario.Instance.LogPlayerMessage(message);
                         else
                             FlightLogger.fetch.LogEvent(message);
@@ -452,6 +460,22 @@ namespace WildBlueIndustries
 
             //Make the check.
             lastQualityCheck = BARISScenario.Instance.PerformQualityCheck(this.part.vessel, currentQuality, qualityCheckSkill);
+            if (!testStandMode)
+            {
+                switch (lastQualityCheck.statusResult)
+                {
+                    case QualityCheckStatus.criticalFail:
+                        snacksWrapper.AddStressToCrew(vessel, BARISStressCategories.stressCategoryMedium);
+                        break;
+
+                    case QualityCheckStatus.fail:
+                        snacksWrapper.AddStressToCrew(vessel, BARISStressCategories.stressCategoryLow);
+                        break;
+
+                    default:
+                        break;
+                }
+            }
 
             //Drive the state based upon the result.
             UpdateQualityState(lastQualityCheck);
@@ -472,7 +496,7 @@ namespace WildBlueIndustries
         [KSPEvent(guiName = "Declare Broken")]
         public override void DeclarePartBroken()
         {
-            if (!BARISSettings.PartsCanBreak)
+            if (!BARISBridge.PartsCanBreak)
                 return;
 
             //Make sure that quality is updated
@@ -481,7 +505,7 @@ namespace WildBlueIndustries
 
             //Enable the repair button
             Events["RepairPart"].active = true;
-            Events["RepairPart"].guiActive = !BARISSettings.RepairsRequireEVA;
+            Events["RepairPart"].guiActive = !BARISBridge.RepairsRequireEVA;
 
             //Send email signifying that the part is broken.
             SendPartBrokenEmail();
@@ -491,7 +515,7 @@ namespace WildBlueIndustries
             {
                 string message;
 
-                if (BARISSettings.RepairsRequireResources)
+                if (BARISBridge.RepairsRequireResources)
                     message = BARISBridge.MsgBodyA + this.part.partInfo.title + BARISBridge.MsgBodyBroken1 + GetRepairCost() + BARISBridge.MsgBodyBroken2;
                 else
                     message = BARISBridge.MsgBodyA + this.part.partInfo.title + BARISBridge.MsgBodyBroken3;
@@ -500,10 +524,6 @@ namespace WildBlueIndustries
 
             //Highlight the part on and off for a few seconds.
             SetupBrokenHighlighting();
-
-            //If we only have one breakable part module then fire the part broken event.
-//            if (breakableParts.Count == 1)
-//                FireOnPartBroken();
 
             //We have more than one breakable part, such as Brumby's RCS and transmitter.
             //Randomly select one to fail.
@@ -524,6 +544,7 @@ namespace WildBlueIndustries
             }
 
             debugLog("Part " + this.part.partInfo.title + " is declared broken.");
+            FireOnPartBroken();
         }
 
         public virtual void DeclarePartFixedOnStart()
@@ -532,7 +553,8 @@ namespace WildBlueIndustries
             Events["RepairPart"].active = false;
 
             //Reset highlight color
-            resetHighlightColor();
+            if (!testStandMode)
+                resetHighlightColor();
 
             //Inform player
             if (this.part.vessel == FlightGlobals.ActiveVessel && FlightGlobals.ActiveVessel.isEVA)
@@ -581,9 +603,6 @@ namespace WildBlueIndustries
                 BARISScenario.Instance.LogPlayerMessage(message);
             }
 
-            //Fire part fixed event.
-            FireOnPartFixed();
-
             //Remove any Tiger Team efforts if all the broken parts on the vessel are fixed.
             List<ModuleQualityControl> qualityModules = this.part.vessel.FindPartModulesImplementing<ModuleQualityControl>();
             if (qualityModules.Count > 0)
@@ -604,6 +623,9 @@ namespace WildBlueIndustries
             }
 
             debugLog("Part " + this.part.partInfo.title + " is declared fixed.");
+
+            //Fire part fixed event.
+            FireOnPartFixed();
         }
 
         /// <summary>
@@ -751,6 +773,10 @@ namespace WildBlueIndustries
         {
             string message;
 
+            //Nothing to do during testing...
+            if (testStandMode)
+                return;
+
             switch (qualityResult.statusResult)
             {
                 default:
@@ -785,7 +811,7 @@ namespace WildBlueIndustries
                     {
                         message = qualityResult.astronaut.name + Localizer.Format(BARISScenario.QualityCheckFailAvertedAstronaut1) + this.part.partInfo.title +
                             Localizer.Format(BARISScenario.QualityCheckFailAvertedAstronaut2);
-                        if (BARISSettings.LogAstronautAvertMsg)
+                        if (BARISBridge.LogAstronautAvertMsg)
                             BARISScenario.Instance.LogPlayerMessage(message);
                         else
                             FlightLogger.fetch.LogEvent(message);
@@ -822,9 +848,9 @@ namespace WildBlueIndustries
 
                 case QualityCheckStatus.criticalFail:
                     //On a critical failure, the part might just explode it it is out of MTBF.
-                    if (BARISBreakableParts.FailuresCanExplode && currentMTBF <= 0)
+                    if (BARISBridge.FailuresCanExplode && currentMTBF <= 0)
                     {
-                        if (UnityEngine.Random.Range(1, 100) >= BARISBreakableParts.ExplosivePotentialCritical)
+                        if (UnityEngine.Random.Range(1, 100) >= BARISBridge.ExplosivePotentialCritical)
                         {
                             message = this.part.partInfo.title + Localizer.Format(BARISScenario.CatastrophicFailure);
                             BARISScenario.Instance.LogPlayerMessage(message);
@@ -874,7 +900,7 @@ namespace WildBlueIndustries
             {
                 currentMTBF = 0;
                 Events["PerformMaintenance"].active = true;
-                Events["PerformMaintenance"].guiActive = !BARISSettings.RepairsRequireEVA;
+                Events["PerformMaintenance"].guiActive = !BARISBridge.RepairsRequireEVA;
                 SendMaintenanceEmail();
             }
 
@@ -949,7 +975,7 @@ namespace WildBlueIndustries
         /// </summary>
         public virtual void SendMaintenanceEmail()
         {
-            if (!BARISSettings.EmailMaintenanceRequests)
+            if (!BARISBridge.EmailMaintenanceRequests)
                 return;
 
             maintenanceEmailSent = true;
@@ -975,7 +1001,7 @@ namespace WildBlueIndustries
         /// </summary>
         public virtual void SendPartBrokenEmail()
         {
-            if (!BARISSettings.EmailRepairRequests)
+            if (!BARISBridge.EmailRepairRequests || testStandMode)
                 return;
 
             StringBuilder resultsMessage = new StringBuilder();
@@ -1004,7 +1030,7 @@ namespace WildBlueIndustries
             //Setup event buttons.
             //Repairs might require EVAs
             if (currentQuality <= 0)
-                Events["RepairPart"].active = BARISSettings.RepairsRequireEVA;
+                Events["RepairPart"].active = BARISBridge.RepairsRequireEVA;
             else
                 Events["RepairPart"].active = false;
 
@@ -1014,8 +1040,8 @@ namespace WildBlueIndustries
                 Events["PerformMaintenance"].active = false;
 
             //Setup EVA-only repairs.
-            Events["RepairPart"].guiActive = !BARISSettings.RepairsRequireEVA;
-            Events["PerformMaintenance"].guiActive = !BARISSettings.RepairsRequireEVA;
+            Events["RepairPart"].guiActive = !BARISBridge.RepairsRequireEVA;
+            Events["PerformMaintenance"].guiActive = !BARISBridge.RepairsRequireEVA;
 
             if (BARISScenario.showDebug)
             {
@@ -1139,6 +1165,7 @@ namespace WildBlueIndustries
         {
             base.OnStart(state);
             debugLog("OnStart called");
+            snacksWrapper = new SnacksWrapper();
 
             //Converter monitoring (WARNING: this method incurrs a performance hit)
             if (monitorConverters)
@@ -1197,7 +1224,6 @@ namespace WildBlueIndustries
             }
 
             //Events
-            GameEvents.OnGameSettingsApplied.Add(UpdateSettings);
             UpdateSettings();
             UpdateActivationState();
 
@@ -1216,28 +1242,27 @@ namespace WildBlueIndustries
             }
         }
 
-        public virtual void Destroy()
+        public virtual void OnDestroy()
         {
-            GameEvents.OnGameSettingsApplied.Remove(UpdateSettings);
             if (isMothballed)
                 GameEvents.onPartResourceEmptyNonempty.Remove(onPartResourceEmptyNonempty);
 
-            if (monitorConverters)
+            if (monitorConverters && BARISScenario.Instance != null)
                 BARISScenario.Instance.onTimeTickEvent -= monitorConvertersTimeTick;
         }
 
         public virtual void UpdateSettings()
         {
-            Fields["qualityDisplay"].guiActive = BARISSettings.PartsCanBreak;
+            Fields["qualityDisplay"].guiActive = BARISBridge.PartsCanBreak;
 
             //If the part is broken and parts can no longer break,
             //then declare the part fixed.
-            if (IsBroken && !BARISSettings.PartsCanBreak)
+            if (IsBroken && !BARISBridge.PartsCanBreak)
                 DeclarePartFixed();
 
             //Setup EVA-only repairs.
-            Events["RepairPart"].guiActive = !BARISSettings.RepairsRequireEVA;
-            Events["PerformMaintenance"].guiActive = !BARISSettings.RepairsRequireEVA;
+            Events["RepairPart"].guiActive = !BARISBridge.RepairsRequireEVA;
+            Events["PerformMaintenance"].guiActive = !BARISBridge.RepairsRequireEVA;
 
             //Debug buttons
             Events["DeclarePartBroken"].guiActive = BARISScenario.showDebug;
@@ -1265,7 +1290,7 @@ namespace WildBlueIndustries
             if (currentQuality == -1 || (BARISScenario.isKCTInstalled && vesselIsPreLaunch))
             {
                 //If this vessel was created in flight, or KCT is installed, or we don't do vehicle integration, then we just max out the integration bonus.
-                if (BARISScenario.isKCTInstalled || !BARISSettingsLaunch.VesselsNeedIntegration || HighLogic.LoadedSceneIsFlight)
+                if (BARISScenario.isKCTInstalled || !BARISBridge.VesselsNeedIntegration || HighLogic.LoadedSceneIsFlight)
                 {
                     //If we're in flight, use the best of VAB or SPH bonus.
                     if (HighLogic.LoadedSceneIsFlight)
@@ -1296,7 +1321,7 @@ namespace WildBlueIndustries
                 //If we have no flight experience, and we're in flight, then set a default.
                 if (flightExperienceBonus == 0 && HighLogic.LoadedSceneIsFlight)
                 {
-                    BARISScenario.Instance.RecordFlightExperience(this.part, BARISScenario.DefaultFlightBonus * BARISSettingsLaunch.FlightsPerQualityBonus);
+                    BARISScenario.Instance.RecordFlightExperience(this.part, BARISScenario.DefaultFlightBonus * BARISBridge.FlightsPerQualityBonus);
                     flightExperienceBonus = BARISScenario.DefaultFlightBonus;
                 }
 
@@ -1306,7 +1331,7 @@ namespace WildBlueIndustries
                 //Set current quality and MTBF
                 //In the editor we set the base values if vessel needs integration.
                 //In flight we use the max possible values.
-                if (HighLogic.LoadedSceneIsEditor && BARISSettingsLaunch.VesselsNeedIntegration)
+                if (HighLogic.LoadedSceneIsEditor && BARISBridge.VesselsNeedIntegration)
                 {
                     currentQuality = quality;
                     currentMTBF = mtbf;
