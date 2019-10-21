@@ -16,7 +16,12 @@ NOTE: ModuleManager is REQUIRED.
 
 ---REVISION HISTORY---
 
+1.10.0
+- Updated to KSP 1.8
+
 1.9.0 Test Stand Mini-Game
+
+BE SURE TO REPLACE EXISTING BARIS BRIDGE TOO!
 
 New Part Capability
 - Launch Clamp: The stock Launch Clamp now contains a test stand. If you enable the test stand and then manipulate your vessel via the Part Action Windows or action buttons, and a part fails, then there's a chance that the part's quality will improve. The higher the part's quality, the less likely that it'll experience a part failure, and the less likely that it has a chance to improve. There's also a chance that the vessel will explode when performing tests... and the chance goes up each time that a part fails...

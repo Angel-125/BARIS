@@ -2398,6 +2398,9 @@ namespace WildBlueIndustries
             string checkSkill;
             int highestRank = 0;
             int crewRank = 0;
+            bool hasABadass = false;
+            bool hasAVeteran = false;
+            bool hasAHero = false;
             for (int skillIndex = 0; skillIndex < skillsToCheck.Length; skillIndex++)
             {
                 checkSkill = skillsToCheck[skillIndex];
@@ -2408,6 +2411,12 @@ namespace WildBlueIndustries
                 {
                     if (vesselCrew[index].HasEffect(checkSkill))
                     {
+                        if (vesselCrew[index].isBadass)
+                            hasABadass = true;
+                        if (vesselCrew[index].veteran)
+                            hasAVeteran = true;
+                        if (vesselCrew[index].isHero)
+                            hasAHero = true;
                         crewRank = vesselCrew[index].experienceTrait.CrewMemberExperienceLevel();
                         if (crewRank > highestRank)
                         {
@@ -2428,6 +2437,13 @@ namespace WildBlueIndustries
                     }
                 }
             }
+
+            if (hasABadass)
+                highestRank += 1;
+            if (hasAVeteran)
+                highestRank += 1;
+            if (hasAHero)
+                highestRank += 1;
 
             debugLog("highestRank: " + highestRank);
             return highestRank;
