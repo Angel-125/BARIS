@@ -17,8 +17,6 @@ C:\Projects\KSP\WildBlueIndustries\BARISBridge\bin\Debug\Mono.Security.dll
 C:\Projects\KSP\WildBlueIndustries\BARISBridge\bin\Debug\UnityEngine.xml
 C:\Projects\KSP\WildBlueIndustries\BARISBridge\obj\Debug\BARISBridge.dll
 C:\Projects\KSP\WildBlueIndustries\BARISBridge\obj\Debug\BARISBridge.pdb
-C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\obj\Debug\BARISBridge.csprojAssemblyReference.cache
-C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\obj\Debug\BARISBridge.csproj.CoreCompileInputs.cache
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\MarkdownSeparator.exe
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\xmldoc2md.xsl
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\RunMDSeparator.bat
@@ -31,7 +29,6 @@ C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\Assembly-CSharp-f
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\Assembly-CSharp.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.AnimationModule.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.CoreModule.dll
-C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.ImageConversionModule.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.IMGUIModule.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.InputLegacyModule.dll
@@ -57,7 +54,11 @@ C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.VRMod
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.UnityWebRequestTextureModule.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\TDx.TDxInput.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.Physics2DModule.dll
+C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.SharedInternalsModule.dll
+C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.JSONSerializeModule.dll
+C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.UnityWebRequestAssetBundleModule.dll
+C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.XRModule.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.AccessibilityModule.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.AIModule.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.AndroidJNIModule.dll
@@ -65,7 +66,6 @@ C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.Clust
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.DirectorModule.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.DSPGraphModule.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.GridModule.dll
-C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.JSONSerializeModule.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.LocalizationModule.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.SpriteMaskModule.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.SpriteShapeModule.dll
@@ -83,12 +83,12 @@ C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.GameC
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.InputModule.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.TextCoreModule.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.UNETModule.dll
-C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.UnityWebRequestAssetBundleModule.dll
-C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.XRModule.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.ARModule.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.ClusterRendererModule.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.CrashReportingModule.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\bin\Debug\UnityEngine.PerformanceReportingModule.dll
+C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\obj\Debug\BARISBridge.csproj.CoreCompileInputs.cache
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\obj\Debug\BARISBridge.csproj.CopyComplete
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\obj\Debug\BARISBridge.dll
 C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\obj\Debug\BARISBridge.pdb
+C:\Projects\KSP\WildBlueIndustries\BARIS\BARISBridge\obj\Debug\BARISBridge.csprojAssemblyReference.cache

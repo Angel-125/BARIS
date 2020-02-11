@@ -16,7 +16,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
+    <DebugType>portable</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
@@ -166,10 +166,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>"C:\Projects\KSP\WildBlueIndustries\pdb2mdb\pdb2mdb.exe" "$(TargetFileName)"
-xcopy /Y "$(TargetPath)" "C:\KSPDev\GameData\WildBlueIndustries\000BARIS\"﻿
+    <PostBuildEvent>xcopy /Y "$(TargetPath)" "C:\KSPDev\GameData\WildBlueIndustries\000BARIS\"﻿
 xcopy /Y "$(TargetDir)$(TargetName).pdb" "C:\KSPDev\GameData\WildBlueIndustries\000BARIS\"
-xcopy /Y "$(TargetDir)$(TargetName).dll.mdb" "C:\KSPDev\GameData\WildBlueIndustries\000BARIS\"
 xcopy /Y "$(TargetDir)$(TargetName).dll" "C:\KSPDev\GameData\WildBlueIndustries\000BARIS\"
 
 xcopy /Y /E  "C:\KSPDev\GameData\WildBlueIndustries\000BARIS\BARIS.version" "C:\Projects\KSP\WildBlueIndustries\BARIS\Notes\"
