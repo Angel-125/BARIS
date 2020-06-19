@@ -34,6 +34,9 @@ namespace WildBlueIndustries
         [GameParameters.CustomParameterUI("Parts can break", toolTip = "If enabled, parts can break.", autoPersistance = true)]
         public bool partsCanBreak = false;
 
+        [GameParameters.CustomIntParameterUI("Starting Quality", maxValue = 100, minValue = 0, stepSize = 5, toolTip = "Parts start with this quality rating.", autoPersistance = true)]
+        public int startingQuality = 5;
+
         [GameParameters.CustomIntParameterUI("Quality Cap", maxValue = 100, minValue = 50, stepSize = 5, toolTip = "Max quality that a part can have.", autoPersistance = true)]
         public int qualityCap = 80;
 
@@ -133,7 +136,22 @@ namespace WildBlueIndustries
                 settings.checksPerDay = value;
             }
         }
-        
+
+        public static int StartingQuality
+        {
+            get
+            {
+                BARISSettings settings = HighLogic.CurrentGame.Parameters.CustomParams<BARISSettings>();
+                return settings.startingQuality;
+            }
+
+            set
+            {
+                BARISSettings settings = HighLogic.CurrentGame.Parameters.CustomParams<BARISSettings>();
+                settings.startingQuality = value;
+            }
+        }
+
         public static int QualityCap
         {
             get

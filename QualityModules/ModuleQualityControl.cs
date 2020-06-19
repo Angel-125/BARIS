@@ -1281,6 +1281,13 @@ namespace WildBlueIndustries
         {
             bool vesselIsPreLaunch = false;
 
+            if (HighLogic.LoadedSceneIsEditor)
+            {
+                quality = BARISSettings.StartingQuality;
+                if (currentQuality < quality)
+                    currentQuality = quality;
+            }
+
             if (this.part.vessel != null)
             {
                 if (this.part.vessel.situation == Vessel.Situations.PRELAUNCH)
