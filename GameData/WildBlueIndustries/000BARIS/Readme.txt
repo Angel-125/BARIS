@@ -16,6 +16,9 @@ NOTE: ModuleManager is REQUIRED.
 
 ---REVISION HISTORY---
 
+1.11.0
+- Recompiled for KSP 1.12.2.
+
 1.10.0
 - Updated to KSP 1.8
 

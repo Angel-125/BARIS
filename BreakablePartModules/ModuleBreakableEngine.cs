@@ -470,10 +470,13 @@ namespace WildBlueIndustries
             for (int index = 0; index < engines.Count; index++)
             {
                 moduleEngine = engines[index];
-                multiModeEngines.Add(moduleEngine.engineID, moduleEngine);
+                if (!multiModeEngines.ContainsKey(moduleEngine.engineID))
+                {
+                    multiModeEngines.Add(moduleEngine.engineID, moduleEngine);
 
-                allowShutdown[index] = moduleEngine.allowShutdown;
-                throttleLocked[index] = moduleEngine.throttleLocked;
+                    allowShutdown[index] = moduleEngine.allowShutdown;
+                    throttleLocked[index] = moduleEngine.throttleLocked;
+                }
             }
 
             //Get whichever multimode engine is the active one.

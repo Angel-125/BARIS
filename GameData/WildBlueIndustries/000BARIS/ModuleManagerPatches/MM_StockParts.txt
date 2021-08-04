@@ -1,0 +1,189 @@
+//For testing purposes, we designate the Mk1 Lander Cab as an escape pod.
+@PART[landerCabinSmall,crewCabin]
+{
+	MODULE
+	{
+		name = ModuleEscapePod
+		escapePodEnabled = true
+	}
+}
+
+//Moved launch clamp to Engineering 101 to enable static fire tests.
+@PART[launchClamp1]
+{
+	@TechRequired = engineering101
+
+	MODULE
+	{
+		//This part module monitors the usage of a vessel's parts. If a part fails, then it checks to see
+		//if the part's quality will be improved. There is also a possibility that the vessel will explode.
+		//During the testing, the vessel's parts will automatically be repaired.
+		name = ModuleTestStand
+
+		//Min value for the improvement check
+		minDieRoll = 1
+
+		//Max value for the improvement check
+		maxDieRoll = 100
+
+		//Target number for the improvement check.
+		//The die roll ranges from minDieRoll to maxDieRoll.
+		improveQualityTargetNumber = 99
+
+		//Amount to improve a part's quality by upon a successful improvement check.
+		//The part's quality is subject to the Quality Cap.
+		qualityImprovementAmount = 1
+
+		//Each time the improvement check is made, there's an increasing chance that the vessel will explode.
+		//This field specifies how much to increase the explosion probability by. Once it reaches 100% the
+		//vessel is guaranteed to explode.
+		explodeProbabilityIncrement = 0.5
+	}
+}
+
+@PART[RadialDrill,MiniDrill]
+{
+	@MODULE[ModuleResourceHarvester]
+	{
+		@name = ModuleBreakableHarvester
+	}
+
+	@MODULE[ModuleAsteroidDrill]
+	{
+		@name = ModuleBreakableAsteroidDrill
+	}
+}
+
+@PART[ISRU]
+{
+	MODULE
+	{
+		 name = ModuleResourceConverter
+		 ConverterName = Equipment
+		 StartActionName = Start Equipment
+		 StopActionName = Stop Equipment
+		AutoShutdown = true
+		TemperatureModifier
+		{
+			key = 0 100000
+			key = 750 50000
+			key = 1000 10000
+			key = 1250 500	
+			key = 2000 50	
+			key = 4000 0
+		}				
+		GeneratesHeat = true
+		DefaultShutoffTemp = .8
+		ThermalEfficiency 
+		{
+			key = 0 0 0 0
+			key = 500 0.1 0 0
+			key = 1000 1.0 0 0
+			key = 1250 0.1 0 0
+			key = 3000 0 0 0 
+		}
+
+
+		UseSpecialistBonus = true
+		SpecialistEfficiencyFactor = 0.2
+		SpecialistBonusBase = 0.05
+		UseSpecialistHeatBonus = true
+		SpecialistHeatFactor = 0.1
+		ExperienceEffect = ConverterSkill
+		EfficiencyBonus = 1
+
+		 
+		 INPUT_RESOURCE
+		 {
+			ResourceName = Ore
+			Ratio = 0.5
+			FlowMode = STAGE_PRIORITY_FLOW
+  		 }
+		 INPUT_RESOURCE
+		 {
+			ResourceName = ElectricCharge
+			Ratio = 30
+		 }
+		 OUTPUT_RESOURCE
+		 {
+			ResourceName = Equipment
+			Ratio = 0.025
+			DumpExcess = false
+			FlowMode = STAGE_PRIORITY_FLOW
+		 }
+	}
+
+	MODULE
+	{
+		name = ModuleQualityControl
+		mtbf = 180 
+		monitorConverters = true
+	}
+}
+
+@PART[MiniISRU]
+{
+	MODULE
+	{
+		 name = ModuleResourceConverter
+		 ConverterName = Equipment
+		 StartActionName = Start Equipment
+		 StopActionName = Stop Equipment
+		AutoShutdown = true
+		TemperatureModifier
+		{
+			key = 0 100000
+			key = 750 50000
+			key = 1000 10000
+			key = 1250 500	
+			key = 2000 50	
+			key = 4000 0
+		}				
+		GeneratesHeat = true
+		DefaultShutoffTemp = .8
+		ThermalEfficiency 
+		{
+			key = 0 0 0 0
+			key = 500 0.1 0 0
+			key = 1000 1.0 0 0
+			key = 1250 0.1 0 0
+			key = 3000 0 0 0 
+		}
+
+
+		UseSpecialistBonus = true
+		SpecialistEfficiencyFactor = 0.2
+		SpecialistBonusBase = 0.05
+		UseSpecialistHeatBonus = true
+		SpecialistHeatFactor = 0.1
+		ExperienceEffect = ConverterSkill
+		EfficiencyBonus = 1
+
+		 
+		 INPUT_RESOURCE
+		 {
+			ResourceName = Ore
+			Ratio = 2.5
+			FlowMode = STAGE_PRIORITY_FLOW
+  		 }
+		 INPUT_RESOURCE
+		 {
+			ResourceName = ElectricCharge
+			Ratio = 30
+		 }
+		 OUTPUT_RESOURCE
+		 {
+			ResourceName = Equipment
+			Ratio = 0.05
+			DumpExcess = false
+			FlowMode = STAGE_PRIORITY_FLOW
+		 }
+	}
+
+	MODULE
+	{
+		name = ModuleQualityControl
+		mtbf = 180 
+		monitorConverters = true
+	}
+}
